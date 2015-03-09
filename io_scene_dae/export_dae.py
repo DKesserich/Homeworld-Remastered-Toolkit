@@ -203,7 +203,8 @@ class DaeExporter:
 
 		if (material in self.material_cache):
 			return self.material_cache[material]
-
+		
+		#fxid pulls Material Name
 		fxid = material.name
 		self.writel(S_FX,1,'<effect id="'+fxid+'-fx" name="'+material.name+'">')
 		self.writel(S_FX,2,'<profile_COMMON>')
@@ -326,6 +327,7 @@ class DaeExporter:
 
 
 		#Material
+		#matid pulls Material Name
 		matid = material.name
 		self.writel(S_MATS,1,'<material id="'+matid+'" name="'+material.name+'">')
 		self.writel(S_MATS,2,'<instance_effect url="#'+fxid+'"/>')
@@ -594,7 +596,7 @@ class DaeExporter:
 				#only triangles and above
 				indices.append(vi)
 
-
+		#meshid pulls Mesh Name
 		meshid = mesh.name
 		if (custom_name!=None):
 			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+custom_name+'">')
