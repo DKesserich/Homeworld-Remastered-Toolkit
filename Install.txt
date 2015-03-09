@@ -1,0 +1,3 @@
+As of now: Copy the io_scene_dae folder to your Blender/scripts/addons/ folder. Turn on the Better Collada Exporter in the addons in Blender.
+
+I'll figure out changing the add-on name and folder name to avoid conflicting with previously installed versions later.
