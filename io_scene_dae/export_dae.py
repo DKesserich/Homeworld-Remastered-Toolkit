@@ -166,7 +166,7 @@ class DaeExporter:
 		if (image in self.image_cache):
 			return self.image_cache[image]
 
-		imgpath = image.filepath
+		imgpath = image.image.filepath
 		if (imgpath.find("//")==0 or imgpath.find("\\\\")==0):
 			#if relative, convert to absolute
 			imgpath = bpy.path.abspath(imgpath)
@@ -192,8 +192,8 @@ class DaeExporter:
 
 
 
-		imgid = self.new_id("image")
-		self.writel(S_IMGS,1,'<image id="'+imgid+'" name="'+image.name+'">')
+		imgid = image.name
+		self.writel(S_IMGS,1,'<image id="'+imgid+'-image" name="'+image.name+'">')
 		self.writel(S_IMGS,2,'<init_from>'+imgpath+'</init_from>"/>')
 		self.writel(S_IMGS,1,'</image>')
 		self.image_cache[image]=imgid
@@ -230,33 +230,33 @@ class DaeExporter:
 				continue
 
 			#image
-			imgid = self.export_image(ts.texture.image)
+			imgid = self.export_image(ts.texture)
 
 			#surface
-			surface_sid = self.new_id("fx_surf")
-			self.writel(S_FX,3,'<newparam sid="'+surface_sid+'">')
-			self.writel(S_FX,4,'<surface type="2D">')
-			self.writel(S_FX,5,'<init_from>'+imgid+'</init_from>') #this is sooo weird
-			self.writel(S_FX,5,'<format>A8R8G8B8</format>')
-			self.writel(S_FX,4,'</surface>')
-			self.writel(S_FX,3,'</newparam>')
+			#surface_sid = self.new_id("fx_surf")
+			#self.writel(S_FX,3,'<newparam sid="'+surface_sid+'">')
+			#self.writel(S_FX,4,'<surface type="2D">')
+			#self.writel(S_FX,5,'<init_from>'+imgid+'</init_from>') #this is sooo weird
+			#self.writel(S_FX,5,'<format>A8R8G8B8</format>')
+			#self.writel(S_FX,4,'</surface>')
+			#self.writel(S_FX,3,'</newparam>')
 			#sampler, collada sure likes it difficult
 			sampler_sid = self.new_id("fx_sampler")
-			self.writel(S_FX,3,'<newparam sid="'+sampler_sid+'">')
-			self.writel(S_FX,4,'<sampler2D>')
-			self.writel(S_FX,5,'<source>'+surface_sid+'</source>')
-			self.writel(S_FX,4,'</sampler2D>')
-			self.writel(S_FX,3,'</newparam>')
+			#self.writel(S_FX,3,'<newparam sid="'+sampler_sid+'">')
+			##self.writel(S_FX,4,'<sampler2D>')
+			#self.writel(S_FX,5,'<source>'+surface_sid+'</source>')
+			#self.writel(S_FX,4,'</sampler2D>')
+			#self.writel(S_FX,3,'</newparam>')
 			sampler_table[i]=sampler_sid
 
 			if (ts.use_map_color_diffuse and diffuse_tex==None):
-				diffuse_tex=sampler_sid
+				diffuse_tex=ts.texture.name
 			if (ts.use_map_color_spec and specular_tex==None):
-				specular_tex=sampler_sid
+				specular_tex=ts.texture.name
 			if (ts.use_map_emit and emission_tex==None):
-				emission_tex=sampler_sid
+				emission_tex=ts.texture.name
 			if (ts.use_map_normal and normal_tex==None):
-				normal_tex=sampler_sid
+				normal_tex=ts.texture.name
 
 		self.writel(S_FX,3,'<technique sid="common">')
 		shtype="blinn"
@@ -265,7 +265,7 @@ class DaeExporter:
 
 		self.writel(S_FX,5,'<emission>')
 		if (emission_tex!=None):
-			self.writel(S_FX,6,'<texture texture="'+emission_tex+'" texcoord="CHANNEL1"/>')
+			self.writel(S_FX,6,'<texture texture="'+emission_tex+'-image" texcoord="CHANNEL0"/>')
 		else:
 			self.writel(S_FX,6,'<color>'+numarr(material.diffuse_color,material.emit)+' </color>') # not totally right but good enough
 		self.writel(S_FX,5,'</emission>')
@@ -276,14 +276,14 @@ class DaeExporter:
 
 		self.writel(S_FX,5,'<diffuse>')
 		if (diffuse_tex!=None):
-			self.writel(S_FX,6,'<texture texture="'+diffuse_tex+'" texcoord="CHANNEL1"/>')
+			self.writel(S_FX,6,'<texture texture="'+diffuse_tex+'-image" texcoord="CHANNEL0"/>')
 		else:
 			self.writel(S_FX,6,'<color>'+numarr(material.diffuse_color,material.diffuse_intensity)+'</color>')
 		self.writel(S_FX,5,'</diffuse>')
 
 		self.writel(S_FX,5,'<specular>')
 		if (specular_tex!=None):
-			self.writel(S_FX,6,'<texture texture="'+specular_tex+'" texcoord="CHANNEL1"/>')
+			self.writel(S_FX,6,'<texture texture="'+specular_tex+'-image" texcoord="CHANNEL0"/>')
 		else:
 			self.writel(S_FX,6,'<color>'+numarr(material.specular_color,material.specular_intensity)+'</color>')
 		self.writel(S_FX,5,'</specular>')
@@ -307,10 +307,10 @@ class DaeExporter:
 		self.writel(S_FX,4,'<index_of_refraction>'+str(material.specular_ior)+'</index_of_refraction>')
 
 		self.writel(S_FX,4,'<extra>')
-		self.writel(S_FX,5,'<technique profile="FCOLLADA">')
+		self.writel(S_FX,5,'<technique profile="MAYA">')
 		if (normal_tex):
 			self.writel(S_FX,6,'<bump bumptype="NORMALMAP">')
-			self.writel(S_FX,7,'<texture texture="'+normal_tex+'" texcoord="CHANNEL1"/>')
+			self.writel(S_FX,7,'<texture texture="'+normal_tex+'-image" texcoord="CHANNEL0"/>')
 			self.writel(S_FX,6,'</bump>')
 
 		self.writel(S_FX,5,'</technique>')
@@ -330,7 +330,7 @@ class DaeExporter:
 		#matid pulls Material Name
 		matid = material.name
 		self.writel(S_MATS,1,'<material id="'+matid+'" name="'+material.name+'">')
-		self.writel(S_MATS,2,'<instance_effect url="#'+fxid+'"/>')
+		self.writel(S_MATS,2,'<instance_effect url="#'+matid+'-fx"/>')
 		self.writel(S_MATS,1,'</material>')
 
 		self.material_cache[material]=matid
