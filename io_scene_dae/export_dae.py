@@ -49,8 +49,8 @@ from mathutils import Vector, Matrix
 #according to collada spec, order matters
 S_ASSET=0
 S_IMGS=1
-S_FX=2
-S_MATS=3
+S_MATS=2
+S_FX=3
 S_GEOM=4
 S_MORPH=5
 S_SKIN=6
@@ -194,7 +194,7 @@ class DaeExporter:
 
 		imgid = image.name
 		self.writel(S_IMGS,1,'<image id="'+imgid+'-image" name="'+image.name+'">')
-		self.writel(S_IMGS,2,'<init_from>'+imgpath+'</init_from>"/>')
+		self.writel(S_IMGS,2,'<init_from>'+imgpath+'</init_from>')
 		self.writel(S_IMGS,1,'</image>')
 		self.image_cache[image]=imgid
 		return imgid
@@ -258,66 +258,96 @@ class DaeExporter:
 			if (ts.use_map_normal and normal_tex==None):
 				normal_tex=ts.texture.name
 
-		self.writel(S_FX,3,'<technique sid="common">')
-		shtype="blinn"
+		self.writel(S_FX,3,'<technique sid="standard">')
+		shtype="phong"
 		self.writel(S_FX,4,'<'+shtype+'>')
 		#ambient? from where?
 
 		self.writel(S_FX,5,'<emission>')
 		if (emission_tex!=None):
-			self.writel(S_FX,6,'<texture texture="'+emission_tex+'-image" texcoord="CHANNEL0"/>')
+			self.writel(S_FX,6,'<texture texture="'+emission_tex+'-image" texcoord="CHANNEL0">')
+			self.writel(S_FX,7,'<extra>')
+			self.writel(S_FX,8,'<technique profile="MAYA">')		
+			self.writel(S_FX,9,'<wrapU sid="wrapU0">TRUE</wrapU>')
+			self.writel(S_FX,9,'<wrapV sid="wrapV0">TRUE</wrapV>')
+			self.writel(S_FX,9,'<blend_mode>ADD</blend_mode>')
+			self.writel(S_FX,8,'</technique>')			
+			self.writel(S_FX,7,'</extra>')
+			self.writel(S_FX,6,'</texture>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.diffuse_color,material.emit)+' </color>') # not totally right but good enough
+			self.writel(S_FX,6,'<color sid="emission">'+numarr(material.diffuse_color,material.emit)+' </color>') # not totally right but good enough
 		self.writel(S_FX,5,'</emission>')
 
 		self.writel(S_FX,5,'<ambient>')
-		self.writel(S_FX,6,'<color>'+numarr(self.scene.world.ambient_color,material.ambient)+' </color>')
+		self.writel(S_FX,6,'<color sid="ambient">'+numarr(self.scene.world.ambient_color,material.ambient)+' </color>')
 		self.writel(S_FX,5,'</ambient>')
 
 		self.writel(S_FX,5,'<diffuse>')
 		if (diffuse_tex!=None):
-			self.writel(S_FX,6,'<texture texture="'+diffuse_tex+'-image" texcoord="CHANNEL0"/>')
+			self.writel(S_FX,6,'<texture texture="'+diffuse_tex+'-image" texcoord="CHANNEL0">')
+			self.writel(S_FX,7,'<extra>')
+			self.writel(S_FX,8,'<technique profile="MAYA">')		
+			self.writel(S_FX,9,'<wrapU sid="wrapU0">TRUE</wrapU>')
+			self.writel(S_FX,9,'<wrapV sid="wrapV0">TRUE</wrapV>')
+			self.writel(S_FX,9,'<blend_mode>ADD</blend_mode>')
+			self.writel(S_FX,8,'</technique>')			
+			self.writel(S_FX,7,'</extra>')
+			self.writel(S_FX,6,'</texture>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.diffuse_color,material.diffuse_intensity)+'</color>')
+			self.writel(S_FX,6,'<color sid="diffuse">'+numarr(material.diffuse_color,material.diffuse_intensity)+'</color>')
 		self.writel(S_FX,5,'</diffuse>')
 
 		self.writel(S_FX,5,'<specular>')
 		if (specular_tex!=None):
-			self.writel(S_FX,6,'<texture texture="'+specular_tex+'-image" texcoord="CHANNEL0"/>')
+			self.writel(S_FX,6,'<texture texture="'+specular_tex+'-image" texcoord="CHANNEL0">')
+			self.writel(S_FX,7,'<extra>')
+			self.writel(S_FX,8,'<technique profile="MAYA">')		
+			self.writel(S_FX,9,'<wrapU sid="wrapU0">TRUE</wrapU>')
+			self.writel(S_FX,9,'<wrapV sid="wrapV0">TRUE</wrapV>')
+			self.writel(S_FX,9,'<blend_mode>ADD</blend_mode>')
+			self.writel(S_FX,8,'</technique>')			
+			self.writel(S_FX,7,'</extra>')
+			self.writel(S_FX,6,'</texture>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.specular_color,material.specular_intensity)+'</color>')
+			self.writel(S_FX,6,'<color sid="specular">'+numarr(material.specular_color,material.specular_intensity)+'</color>')
 		self.writel(S_FX,5,'</specular>')
 
 		self.writel(S_FX,5,'<shininess>')
-		self.writel(S_FX,6,'<float>'+str(material.specular_hardness)+'</float>')
+		self.writel(S_FX,6,'<float sid="shininess">'+str(material.specular_hardness)+'</float>')
 		self.writel(S_FX,5,'</shininess>')
 
-		self.writel(S_FX,5,'<reflective>')
-		self.writel(S_FX,6,'<color>'+strarr(material.mirror_color)+'</color>')
-		self.writel(S_FX,5,'</reflective>')
+		#self.writel(S_FX,5,'<reflective>')
+		#self.writel(S_FX,6,'<color>'+strarr(material.mirror_color)+'</color>')
+		#self.writel(S_FX,5,'</reflective>')
 
 		if (material.use_transparency):
 			self.writel(S_FX,5,'<transparency>')
-			self.writel(S_FX,6,'<float>'+str(material.alpha)+'</float>')
+			self.writel(S_FX,6,'<float sid="transparency">'+str(material.alpha)+'</float>')
+			self.writel(S_FX,5,'</transparency>')
+		else:
+			self.writel(S_FX,5,'<transparency>')
+			self.writel(S_FX,6,'<float sid="transparency">0.000000</float>')
 			self.writel(S_FX,5,'</transparency>')
 
 
-
 		self.writel(S_FX,4,'</'+shtype+'>')
-		self.writel(S_FX,4,'<index_of_refraction>'+str(material.specular_ior)+'</index_of_refraction>')
+		#self.writel(S_FX,4,'<index_of_refraction>'+str(material.specular_ior)+'</index_of_refraction>')
 
-		self.writel(S_FX,4,'<extra>')
-		self.writel(S_FX,5,'<technique profile="MAYA">')
-		if (normal_tex):
-			self.writel(S_FX,6,'<bump bumptype="NORMALMAP">')
-			self.writel(S_FX,7,'<texture texture="'+normal_tex+'-image" texcoord="CHANNEL0"/>')
-			self.writel(S_FX,6,'</bump>')
+		#self.writel(S_FX,4,'<extra>')
+		#self.writel(S_FX,5,'<technique profile="MAYA">')
+		#if (normal_tex):
+		#	self.writel(S_FX,6,'<bump bumptype="NORMALMAP">')
+		#	self.writel(S_FX,7,'<texture texture="'+normal_tex+'-image" texcoord="CHANNEL0"/>')
+		#	self.writel(S_FX,6,'</bump>')
+		#self.writel(S_FX,6,'<wrapU sid="wrapU0">TRUE</wrapU>')
+		#self.writel(S_FX,6,'<wrapV sid="wrapV0">TRUE</wrapV>')
+		#self.writel(S_FX,6,'<blend_mode>ADD</blend_mode>')
 
-		self.writel(S_FX,5,'</technique>')
-		self.writel(S_FX,5,'<technique profile="GOOGLEEARTH">')
-		self.writel(S_FX,6,'<double_sided>'+["0","1"][double_sided_hint]+"</double_sided>")
-		self.writel(S_FX,5,'</technique>')
-		self.writel(S_FX,4,'</extra>')
+		#self.writel(S_FX,5,'</technique>')
+		#self.writel(S_FX,5,'<technique profile="GOOGLEEARTH">')
+		#self.writel(S_FX,6,'<double_sided>'+["0","1"][double_sided_hint]+"</double_sided>")
+		#self.writel(S_FX,5,'</technique>')
+		#self.writel(S_FX,4,'</extra>')
 
 		self.writel(S_FX,3,'</technique>')
 		self.writel(S_FX,2,'</profile_COMMON>')
@@ -459,15 +489,15 @@ class DaeExporter:
 
 		apply_modifiers = len(node.modifiers) and self.config["use_mesh_modifiers"]
 
-		mesh=node.to_mesh(self.scene,apply_modifiers,"RENDER") #is this allright?
+		#mesh=node.to_mesh(self.scene,apply_modifiers,"RENDER") #is this allright?
 
 		triangulate=self.config["use_triangles"]
-		if (triangulate):
-			bm = bmesh.new()
-			bm.from_mesh(mesh)
-			bmesh.ops.triangulate(bm, faces=bm.faces)
-			bm.to_mesh(mesh)
-			bm.free()
+		#if (triangulate):
+		#	bm = bmesh.new()
+		#	bm.from_mesh(mesh)
+		#	bmesh.ops.triangulate(bm, faces=bm.faces)
+		#	bm.to_mesh(mesh)
+		#	bm.free()
 
 
 		mesh.update(calc_tessface=True)
@@ -608,11 +638,15 @@ class DaeExporter:
 
 		# Vertex Array
 		self.writel(S_GEOM,3,'<source id="'+meshid+'-positions">')
+		#"float_values" is the container for the array of vertices
 		float_values=""
+		#loops through all the vertices in the mesh and adds their x, y, and z coordinates to the float_values array
 		for v in vertices:
 			 float_values+=" "+str(v.vertex.x)+" "+str(v.vertex.y)+" "+str(v.vertex.z)
+		#writes the entire float_vales array to a string
 		self.writel(S_GEOM,4,'<float_array id="'+meshid+'-positions-array" count="'+str(len(vertices)*3)+'">'+float_values+'</float_array>')
 		self.writel(S_GEOM,4,'<technique_common>')
+		#Tells the software that is viewing the DAE how to parse the vertex array
 		self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-positions-array" count="'+str(len(vertices))+'" stride="3">')
 		self.writel(S_GEOM,5,'<param name="X" type="float"/>')
 		self.writel(S_GEOM,5,'<param name="Y" type="float"/>')
@@ -702,7 +736,7 @@ class DaeExporter:
 			self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-colors-array" count="'+str(len(vertices))+'" stride="3">')
 			self.writel(S_GEOM,5,'<param name="X" type="float"/>')
 			self.writel(S_GEOM,5,'<param name="Y" type="float"/>')
-			self.writel(S_GEOM,5,'<param name="Z" type="float"/>')
+			self.writel(S_GEOM,5,'<param name="Z" type="float"/>')			
 			self.writel(S_GEOM,4,'</accessor>')
 			self.writel(S_GEOM,4,'</technique_common>')
 			self.writel(S_GEOM,3,'</source>')
@@ -724,21 +758,22 @@ class DaeExporter:
 			mat = materials[m]
 
 			if (mat!=None):
-				matref = self.new_id("trimat")
+				#matref = self.new_id("trimat")
+				matref = mat
 				self.writel(S_GEOM,3,'<'+prim_type+' count="'+str(int(len(indices)))+'" material="'+matref+'">') # todo material
 				mat_assign.append( (mat,matref) )
 			else:
 				self.writel(S_GEOM,3,'<'+prim_type+' count="'+str(int(len(indices)))+'">') # todo material
 
 
-			self.writel(S_GEOM,4,'<input semantic="VERTEX" source="#'+meshid+'-vertices" offset="0"/>')
-			self.writel(S_GEOM,4,'<input semantic="NORMAL" source="#'+meshid+'-normals" offset="0"/>')
+			self.writel(S_GEOM,4,'<input semantic="VERTEX" offset="0" source="#'+meshid+'-vertices"/>')
+			self.writel(S_GEOM,4,'<input semantic="NORMAL" offset="0" source="#'+meshid+'-normals"/>')
 
 			for uvi in range(uv_layer_count):
-				self.writel(S_GEOM,4,'<input semantic="TEXCOORD" source="#'+meshid+'-texcoord-'+str(uvi)+'" offset="0" set="'+str(uvi)+'"/>')
+				self.writel(S_GEOM,4,'<input semantic="TEXCOORD" offset="0" set="'+str(uvi)+'" source="#'+meshid+'-texcoord-'+str(uvi)+'"/>')
 
 			if (has_colors):
-				self.writel(S_GEOM,4,'<input semantic="COLOR" source="#'+meshid+'-colors" offset="0"/>')
+				self.writel(S_GEOM,4,'<input semantic="COLOR" offset="0" source="#'+meshid+'-colors"/>')
 			if (has_tangents):
 				self.writel(S_GEOM,4,'<input semantic="TEXTANGENT" source="#'+meshid+'-tangents" offset="0"/>')
 				self.writel(S_GEOM,4,'<input semantic="TEXBINORMAL" source="#'+meshid+'-bitangents" offset="0"/>')
