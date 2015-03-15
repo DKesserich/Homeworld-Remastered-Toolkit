@@ -279,7 +279,7 @@ class DaeExporter:
 		self.writel(S_FX,5,'</emission>')
 
 		self.writel(S_FX,5,'<ambient>')
-		self.writel(S_FX,6,'<color sid="ambient">'+numarr(self.scene.world.ambient_color,material.ambient)+' </color>')
+		self.writel(S_FX,6,'<color sid="ambient">'+numarr(self.scene.world.ambient_color)+' '+str(material.ambient)+'</color>')
 		self.writel(S_FX,5,'</ambient>')
 
 		self.writel(S_FX,5,'<diffuse>')
@@ -316,9 +316,9 @@ class DaeExporter:
 		self.writel(S_FX,6,'<float sid="shininess">'+str(material.specular_hardness)+'</float>')
 		self.writel(S_FX,5,'</shininess>')
 
-		#self.writel(S_FX,5,'<reflective>')
-		#self.writel(S_FX,6,'<color>'+strarr(material.mirror_color)+'</color>')
-		#self.writel(S_FX,5,'</reflective>')
+		self.writel(S_FX,5,'<reflective>')
+		self.writel(S_FX,6,'<color>'+strarr(material.mirror_color)+'</color>')
+		self.writel(S_FX,5,'</reflective>')
 
 		if (material.use_transparency):
 			self.writel(S_FX,5,'<transparency>')
