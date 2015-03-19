@@ -37,15 +37,16 @@ if "bpy" in locals():
     if "export_dae" in locals():
         imp.reload(export_dae)
 
-
+import math
 import bpy
+import mathutils
+
 from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty
 
 from bpy_extras.io_utils import (ExportHelper,
                                  path_reference_mode,
                                  axis_conversion,
                                  )
-
 
 class ExportDAE(bpy.types.Operator, ExportHelper):
     '''Selection to DAE'''
@@ -178,16 +179,58 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
         from . import export_dae
         return export_dae.save(self, context, **keywords)
 
+class HMRMPanel(bpy.types.Panel):
+    """Creates a Panel in the Create window"""
+    bl_label = "HomeworldRM"
+    bl_idname = "HMRM_TOOLS"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'TOOLS'
+    bl_context = "objectmode"
+    bl_category = "Create"
+    
+    bpy.types.Scene.hardpoint_name = StringProperty(
+        name = "Name")
+
+    def draw(self, context):
+        layout = self.layout
+        scn = context.scene
+        
+        layout.prop(scn, 'hardpoint_name')
+        layout.operator("hmrm.make_weapon", "Weapon")
+        
+class MakeWeaponHardpoint(bpy.types.Operator):
+    bl_idname = "hmrm.make_weapon"
+    bl_label = "Add Weapon Hardpoint"
+    bl_options = {"UNDO"}
+    
+    global jntName_Pos, jntName_Dir, jntName_Rest
+    jntName_Pos = "JNT[" + bpy.context.scene.hardpoint_name + "]"
+    jntName_Rest = "JNT[" + bpy.context.scene.hardpoint_name + "]_Rest"
+    jntName_Dir = "JNT[" + bpy.context.scene.hardpoint_name + "]_Direction"
+ 
+    def invoke(self, context, event):
+        
+        weapon_pos = bpy.data.objects.new(jntName_Pos, None)
+        context.scene.objects.link(weapon_pos)
+        
+        weapon_dir = bpy.data.objects.new(jntName_Dir, None)
+        context.scene.objects.link(weapon_dir)
+        
+        weapon_rest = bpy.data.objects.new(jntName_Rest, None)
+        context.scene.objects.link(weapon_rest)
+        
+        weapon_dir.parent = weapon_pos
+        weapon_rest.parent = weapon_pos
+        
+        return {"FINISHED"}
 
 def menu_func(self, context):
     self.layout.operator(ExportDAE.bl_idname, text="Better Collada - HW (.dae)")
-
 
 def register():
     bpy.utils.register_module(__name__)
 
     bpy.types.INFO_MT_file_export.append(menu_func)
-
 
 def unregister():
     bpy.utils.unregister_module(__name__)
