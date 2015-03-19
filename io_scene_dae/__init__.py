@@ -206,9 +206,9 @@ class MakeWeaponHardpoint(bpy.types.Operator):
  
     def invoke(self, context, event):
         
-        jntName_Pos = "JNT[" + context.scene.hardpoint_name + "]"
-        jntName_Rest = "JNT[" + context.scene.hardpoint_name + "]_Rest"
-        jntName_Dir = "JNT[" + context.scene.hardpoint_name + "]_Direction"
+        jntName_Pos = "JNT[Weapon_" + context.scene.hardpoint_name + "_Position]"
+        jntName_Rest = "JNT[Weapon_" + context.scene.hardpoint_name + "_Rest]"
+        jntName_Dir = "JNT[Weapon_" + context.scene.hardpoint_name + "_Direction]"
         
         weapon_pos = bpy.data.objects.new(jntName_Pos, None)
         context.scene.objects.link(weapon_pos)
@@ -231,11 +231,11 @@ class MakeTurretHardpoint(bpy.types.Operator):
     
     def invoke(self, context, event):
 
-        jntName_Pos = "JNT[" + context.scene.hardpoint_name + "]"
-        jntName_Rest = "JNT[" + context.scene.hardpoint_name + "]_Rest"
-        jntName_Dir = "JNT[" + context.scene.hardpoint_name + "]_Direction"
-        jntName_Lat = "JNT[" + context.scene.hardpoint_name + "]_Latitude"
-        jntName_Muz = "JNT[" + context.scene.hardpoint_name + "]_Muzzle"
+        jntName_Pos = "JNT[Weapon_" + context.scene.hardpoint_name + "_Position]"
+        jntName_Rest = "JNT[Weapon_" + context.scene.hardpoint_name + "_Rest]"
+        jntName_Dir = "JNT[Weapon_" + context.scene.hardpoint_name + "_Direction]"
+        jntName_Lat = "JNT[Weapon_" + context.scene.hardpoint_name + "_Latitude]"
+        jntName_Muz = "JNT[Weapon_" + context.scene.hardpoint_name + "_Muzzle]"
         
         weapon_pos = bpy.data.objects.new(jntName_Pos, None)
         context.scene.objects.link(weapon_pos)
