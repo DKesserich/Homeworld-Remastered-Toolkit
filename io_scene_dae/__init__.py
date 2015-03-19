@@ -190,25 +190,25 @@ class HMRMPanel(bpy.types.Panel):
     
     bpy.types.Scene.hardpoint_name = StringProperty(
         name = "Name")
-
+    
     def draw(self, context):
         layout = self.layout
         scn = context.scene
         
         layout.prop(scn, 'hardpoint_name')
         layout.operator("hmrm.make_weapon", "Weapon")
+        layout.operator("hmrm.make_turret", "Turret")
         
 class MakeWeaponHardpoint(bpy.types.Operator):
     bl_idname = "hmrm.make_weapon"
     bl_label = "Add Weapon Hardpoint"
     bl_options = {"UNDO"}
-    
-    global jntName_Pos, jntName_Dir, jntName_Rest
-    jntName_Pos = "JNT[" + bpy.context.scene.hardpoint_name + "]"
-    jntName_Rest = "JNT[" + bpy.context.scene.hardpoint_name + "]_Rest"
-    jntName_Dir = "JNT[" + bpy.context.scene.hardpoint_name + "]_Direction"
  
     def invoke(self, context, event):
+        
+        jntName_Pos = "JNT[" + context.scene.hardpoint_name + "]"
+        jntName_Rest = "JNT[" + context.scene.hardpoint_name + "]_Rest"
+        jntName_Dir = "JNT[" + context.scene.hardpoint_name + "]_Direction"
         
         weapon_pos = bpy.data.objects.new(jntName_Pos, None)
         context.scene.objects.link(weapon_pos)
@@ -221,6 +221,41 @@ class MakeWeaponHardpoint(bpy.types.Operator):
         
         weapon_dir.parent = weapon_pos
         weapon_rest.parent = weapon_pos
+        
+        return {"FINISHED"}
+    
+class MakeTurretHardpoint(bpy.types.Operator):
+    bl_idname = "hmrm.make_turret"
+    bl_label = "Add Turret Hardpoint"
+    bl_options = {"UNDO"}
+    
+    def invoke(self, context, event):
+
+        jntName_Pos = "JNT[" + context.scene.hardpoint_name + "]"
+        jntName_Rest = "JNT[" + context.scene.hardpoint_name + "]_Rest"
+        jntName_Dir = "JNT[" + context.scene.hardpoint_name + "]_Direction"
+        jntName_Lat = "JNT[" + context.scene.hardpoint_name + "]_Latitude"
+        jntName_Muz = "JNT[" + context.scene.hardpoint_name + "]_Muzzle"
+        
+        weapon_pos = bpy.data.objects.new(jntName_Pos, None)
+        context.scene.objects.link(weapon_pos)
+        
+        weapon_dir = bpy.data.objects.new(jntName_Dir, None)
+        context.scene.objects.link(weapon_dir)
+        
+        weapon_rest = bpy.data.objects.new(jntName_Rest, None)
+        context.scene.objects.link(weapon_rest)
+        
+        weapon_lat = bpy.data.objects.new(jntName_Lat, None)
+        context.scene.objects.link(weapon_lat)
+        
+        weapon_muz = bpy.data.objects.new(jntName_Muz, None)
+        context.scene.objects.link(weapon_muz)
+        
+        weapon_dir.parent = weapon_pos
+        weapon_rest.parent = weapon_pos
+        weapon_lat.parent = weapon_pos
+        weapon_muz.parent = weapon_pos
         
         return {"FINISHED"}
 
