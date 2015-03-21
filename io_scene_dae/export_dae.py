@@ -1215,10 +1215,11 @@ class DaeExporter:
 			return
 		bpy.context.scene.objects.active = node
 
-		self.writel(S_NODES,il,'<node id="'+self.validate_id(node.name)+'" name="'+node.name+'" type="NODE">')
+		self.writel(S_NODES,il,'<node name="'+self.validate_id(node.name)+'" id="'+node.name+'" sid="'+node.name+'E">')
 		il+=1
 
-		self.writel(S_NODES,il,'<matrix sid="transform">'+strmtx(node.matrix_local)+'</matrix>')
+		#self.writel(S_NODES,il,'<matrix sid="transform">'+strmtx(node.matrix_local)+'</matrix>')
+		self.writel(S_NODES,il,'<translate sid="translate">'+str(node.location[0])+' '+str(node.location[1])+' '+str(node.location[2])+'</translate>')
 		print("NODE TYPE: "+node.type+" NAME: "+node.name)
 		if (node.type=="MESH"):
 			self.export_mesh_node(node,il)
@@ -1301,8 +1302,9 @@ class DaeExporter:
 	def export_animation_transform_channel(self,target,keys,matrices=True):
 
 		frame_total=len(keys)
-		anim_id=self.new_id("anim")
-		self.writel(S_ANIM,1,'<animation id="'+anim_id+'">')
+		#anim_id=self.new_id("anim")
+		anim_id=target
+		self.writel(S_ANIM,1,'<animation id="'+anim_id+'-anim" name="'+anim_id+'">')
 		source_frames = ""
 		source_transforms = ""
 		source_interps = ""
