@@ -198,6 +198,7 @@ class HMRMPanel(bpy.types.Panel):
         layout.prop(scn, 'hardpoint_name')
         layout.operator("hmrm.make_weapon", "Weapon")
         layout.operator("hmrm.make_turret", "Turret")
+        layout.operator("hmrm.make_repair", "Repair")
         
 class MakeWeaponHardpoint(bpy.types.Operator):
     bl_idname = "hmrm.make_weapon"
@@ -221,6 +222,9 @@ class MakeWeaponHardpoint(bpy.types.Operator):
         
         weapon_dir.parent = weapon_pos
         weapon_rest.parent = weapon_pos
+        
+        weapon_dir.location.xyz = [0,0,1]
+        weapon_rest.location.xyz = [0,1,0]
         
         return {"FINISHED"}
     
@@ -256,6 +260,44 @@ class MakeTurretHardpoint(bpy.types.Operator):
         weapon_rest.parent = weapon_pos
         weapon_lat.parent = weapon_pos
         weapon_muz.parent = weapon_pos
+        
+        weapon_dir.location.xyz = [0,0,1]
+        weapon_rest.location.xyz = [0,1,0]
+        
+        
+        return {"FINISHED"}
+		
+class MakeRepairHardpoint(bpy.types.Operator):
+    bl_idname = "hmrm.make_repair"
+    bl_label = "Add Repair Hardpoint"
+    bl_options = {"UNDO"}
+    
+    def invoke(self, context, event):
+
+        jntName_Pos = "JNT[RepairPoint" + context.scene.hardpoint_name + "]"
+        jntName_Head = "JNT[RepairPoint" + context.scene.hardpoint_name + "Heading]"
+        jntName_Left = "JNT[RepairPoint" + context.scene.hardpoint_name + "Left]"
+        jntName_Up = "JNT[RepairPoint" + context.scene.hardpoint_name + "Up]"
+        
+        hardp_pos = bpy.data.objects.new(jntName_Pos, None)
+        context.scene.objects.link(hardp_pos)
+        
+        hardp_head = bpy.data.objects.new(jntName_Head, None)
+        context.scene.objects.link(hardp_head)
+        
+        hardp_left = bpy.data.objects.new(jntName_Left, None)
+        context.scene.objects.link(hardp_left)
+        
+        hardp_up = bpy.data.objects.new(jntName_Up, None)
+        context.scene.objects.link(hardp_up)
+        
+        hardp_head.parent = hardp_pos
+        hardp_left.parent = hardp_pos
+        hardp_up.parent = hardp_pos
+        
+        hardp_up.location.xyz = [0,0,1]
+        hardp_head.location.xyz = [0,1,0]
+        hardp_left.location.xyz = [-1,0,0]
         
         return {"FINISHED"}
 
