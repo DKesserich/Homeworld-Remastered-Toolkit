@@ -41,7 +41,7 @@ import math
 import bpy
 import mathutils
 
-from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty
+from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty, IntProperty
 
 from bpy_extras.io_utils import (ExportHelper,
                                  path_reference_mode,
@@ -190,15 +190,27 @@ class HMRMPanel(bpy.types.Panel):
     
     bpy.types.Scene.hardpoint_name = StringProperty(
         name = "Name")
+
+    bpy.types.Scene.utility_name = IntProperty(
+        name = "Hardpoint")
     
     def draw(self, context):
         layout = self.layout
         scn = context.scene
         
+        layout.label("Weapons")
         layout.prop(scn, 'hardpoint_name')
         layout.operator("hmrm.make_weapon", "Weapon")
         layout.operator("hmrm.make_turret", "Turret")
+        
+        layout.separator()
+        layout.separator()
+        
+        layout.label("Utilities")
+        layout.prop(scn,'utility_name')
         layout.operator("hmrm.make_repair", "Repair")
+        layout.operator("hmrm.make_salvage", "Salvage")
+        layout.operator("hmrm.make_capture","Capture")
         
 class MakeWeaponHardpoint(bpy.types.Operator):
     bl_idname = "hmrm.make_weapon"
@@ -274,10 +286,78 @@ class MakeRepairHardpoint(bpy.types.Operator):
     
     def invoke(self, context, event):
 
-        jntName_Pos = "JNT[RepairPoint" + context.scene.hardpoint_name + "]"
-        jntName_Head = "JNT[RepairPoint" + context.scene.hardpoint_name + "Heading]"
-        jntName_Left = "JNT[RepairPoint" + context.scene.hardpoint_name + "Left]"
-        jntName_Up = "JNT[RepairPoint" + context.scene.hardpoint_name + "Up]"
+        jntName_Pos = "JNT[RepairPoint" + str(context.scene.utility_name) + "]"
+        jntName_Head = "JNT[RepairPoint" + str(context.scene.utility_name) + "Heading]"
+        jntName_Left = "JNT[RepairPoint" + str(context.scene.utility_name) + "Left]"
+        jntName_Up = "JNT[RepairPoint" + str(context.scene.utility_name) + "Up]"
+        
+        hardp_pos = bpy.data.objects.new(jntName_Pos, None)
+        context.scene.objects.link(hardp_pos)
+        
+        hardp_head = bpy.data.objects.new(jntName_Head, None)
+        context.scene.objects.link(hardp_head)
+        
+        hardp_left = bpy.data.objects.new(jntName_Left, None)
+        context.scene.objects.link(hardp_left)
+        
+        hardp_up = bpy.data.objects.new(jntName_Up, None)
+        context.scene.objects.link(hardp_up)
+        
+        hardp_head.parent = hardp_pos
+        hardp_left.parent = hardp_pos
+        hardp_up.parent = hardp_pos
+        
+        hardp_up.location.xyz = [0,0,1]
+        hardp_head.location.xyz = [0,1,0]
+        hardp_left.location.xyz = [-1,0,0]
+        
+        return {"FINISHED"}
+    
+class MakeCaptureHardpoint(bpy.types.Operator):
+    bl_idname = "hmrm.make_capture"
+    bl_label = "Add Capture Hardpoint"
+    bl_options = {"UNDO"}
+    
+    def invoke(self, context, event):
+
+        jntName_Pos = "JNT[CapturePoint" + str(context.scene.utility_name) + "]"
+        jntName_Head = "JNT[CapturePoint" + str(context.scene.utility_name) + "Heading]"
+        jntName_Left = "JNT[CapturePoint" + str(context.scene.utility_name) + "Left]"
+        jntName_Up = "JNT[CapturePoint" + str(context.scene.utility_name) + "Up]"
+        
+        hardp_pos = bpy.data.objects.new(jntName_Pos, None)
+        context.scene.objects.link(hardp_pos)
+        
+        hardp_head = bpy.data.objects.new(jntName_Head, None)
+        context.scene.objects.link(hardp_head)
+        
+        hardp_left = bpy.data.objects.new(jntName_Left, None)
+        context.scene.objects.link(hardp_left)
+        
+        hardp_up = bpy.data.objects.new(jntName_Up, None)
+        context.scene.objects.link(hardp_up)
+        
+        hardp_head.parent = hardp_pos
+        hardp_left.parent = hardp_pos
+        hardp_up.parent = hardp_pos
+        
+        hardp_up.location.xyz = [0,0,1]
+        hardp_head.location.xyz = [0,1,0]
+        hardp_left.location.xyz = [-1,0,0]
+        
+        return {"FINISHED"}
+    
+class MakeSalvageardpoint(bpy.types.Operator):
+    bl_idname = "hmrm.make_salvage"
+    bl_label = "Add Salvage Hardpoint"
+    bl_options = {"UNDO"}
+    
+    def invoke(self, context, event):
+
+        jntName_Pos = "JNT[SalvagePoint" + str(context.scene.utility_name) + "]"
+        jntName_Head = "JNT[SalvagePoint" + str(context.scene.utility_name) + "Heading]"
+        jntName_Left = "JNT[SalvagePoint" + str(context.scene.utility_name) + "Left]"
+        jntName_Up = "JNT[SalvagePoint" + str(context.scene.utility_name) + "Up]"
         
         hardp_pos = bpy.data.objects.new(jntName_Pos, None)
         context.scene.objects.link(hardp_pos)
