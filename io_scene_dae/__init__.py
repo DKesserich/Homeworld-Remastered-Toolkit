@@ -92,7 +92,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
     use_triangles = BoolProperty(
 	    name="Triangulate",
 	    description="Export Triangles instead of Polygons.",
-	    default=False,
+	    default=True,
 	    )
 
     use_copy_images = BoolProperty(
@@ -113,7 +113,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
     use_anim = BoolProperty(
             name="Export Animation",
             description="Export keyframe animation",
-            default=False,
+            default=True,
             )
     use_anim_action_all = BoolProperty(
             name="All Actions",

@@ -204,7 +204,7 @@ class DaeExporter:
 		if (material in self.material_cache):
 			return self.material_cache[material]
 		
-		#fxid pulls Material Name
+		#fxid pulls Material Name instead of generating a new id - DL
 		fxid = material.name
 		self.writel(S_FX,1,'<effect id="'+fxid+'-fx" name="'+material.name+'">')
 		self.writel(S_FX,2,'<profile_COMMON>')
@@ -232,6 +232,7 @@ class DaeExporter:
 			#image
 			imgid = self.export_image(ts.texture)
 
+			#Don't seem to need any of this surface and sampler stuff - DL
 			#surface
 			#surface_sid = self.new_id("fx_surf")
 			#self.writel(S_FX,3,'<newparam sid="'+surface_sid+'">')
@@ -257,7 +258,8 @@ class DaeExporter:
 				emission_tex=ts.texture.name
 			if (ts.use_map_normal and normal_tex==None):
 				normal_tex=ts.texture.name
-
+		
+		#Changed the technique and shader type to match the 3DS Max DAE output - DL
 		self.writel(S_FX,3,'<technique sid="standard">')
 		shtype="phong"
 		self.writel(S_FX,4,'<'+shtype+'>')
@@ -266,6 +268,7 @@ class DaeExporter:
 		self.writel(S_FX,5,'<emission>')
 		if (emission_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+emission_tex+'-image" texcoord="CHANNEL0">')
+			#added all the Maya technique stuff - DL
 			self.writel(S_FX,7,'<extra>')
 			self.writel(S_FX,8,'<technique profile="MAYA">')		
 			self.writel(S_FX,9,'<wrapU sid="wrapU0">TRUE</wrapU>')
@@ -285,6 +288,7 @@ class DaeExporter:
 		self.writel(S_FX,5,'<diffuse>')
 		if (diffuse_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+diffuse_tex+'-image" texcoord="CHANNEL0">')
+			#Yup, more Maya technique stuff - DL
 			self.writel(S_FX,7,'<extra>')
 			self.writel(S_FX,8,'<technique profile="MAYA">')		
 			self.writel(S_FX,9,'<wrapU sid="wrapU0">TRUE</wrapU>')
@@ -300,6 +304,7 @@ class DaeExporter:
 		self.writel(S_FX,5,'<specular>')
 		if (specular_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+specular_tex+'-image" texcoord="CHANNEL0">')
+			#And again with the Maya technique stuff - DL
 			self.writel(S_FX,7,'<extra>')
 			self.writel(S_FX,8,'<technique profile="MAYA">')		
 			self.writel(S_FX,9,'<wrapU sid="wrapU0">TRUE</wrapU>')
@@ -316,6 +321,7 @@ class DaeExporter:
 		self.writel(S_FX,6,'<float sid="shininess">'+str(material.specular_hardness)+'</float>')
 		self.writel(S_FX,5,'</shininess>')
 
+		#Gotta have the reflective params. Don't seem to need the relectivity params that were in the 3DS Max DAE - DL
 		self.writel(S_FX,5,'<reflective>')
 		self.writel(S_FX,6,'<color>'+strarr(material.mirror_color)+'</color>')
 		self.writel(S_FX,5,'</reflective>')
@@ -331,6 +337,7 @@ class DaeExporter:
 
 
 		self.writel(S_FX,4,'</'+shtype+'>')
+		#Don't seem need any of this stuff - DL
 		#self.writel(S_FX,4,'<index_of_refraction>'+str(material.specular_ior)+'</index_of_refraction>')
 
 		#self.writel(S_FX,4,'<extra>')
@@ -357,7 +364,7 @@ class DaeExporter:
 
 
 		#Material
-		#matid pulls Material Name
+		#matid pulls Material Name instead of using randomly generated id - DL
 		matid = material.name
 		self.writel(S_MATS,1,'<material id="'+matid+'" name="'+material.name+'">')
 		self.writel(S_MATS,2,'<instance_effect url="#'+matid+'-fx"/>')
@@ -489,6 +496,7 @@ class DaeExporter:
 
 		apply_modifiers = len(node.modifiers) and self.config["use_mesh_modifiers"]
 
+		#Turned off all the to_mesh ops since they were messing with the mesh names - DL
 		#mesh=node.to_mesh(self.scene,apply_modifiers,"RENDER") #is this allright?
 
 		triangulate=self.config["use_triangles"]
@@ -626,7 +634,7 @@ class DaeExporter:
 				#only triangles and above
 				indices.append(vi)
 
-		#meshid pulls Mesh Name
+		#meshid pulls Mesh Name instead of using randomly generated ID - DL
 		meshid = mesh.name
 		if (custom_name!=None):
 			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+custom_name+'">')
@@ -638,15 +646,15 @@ class DaeExporter:
 
 		# Vertex Array
 		self.writel(S_GEOM,3,'<source id="'+meshid+'-positions">')
-		#"float_values" is the container for the array of vertices
+		#NTS: "float_values" is the container for the array of vertices - DL
 		float_values=""
-		#loops through all the vertices in the mesh and adds their x, y, and z coordinates to the float_values array
+		#NTS: loops through all the vertices in the mesh and adds their x, y, and z coordinates to the float_values array -DL
 		for v in vertices:
 			 float_values+=" "+str(v.vertex.x)+" "+str(v.vertex.y)+" "+str(v.vertex.z)
-		#writes the entire float_vales array to a string
+		#NTS: writes the entire float_vales array to a string - DL
 		self.writel(S_GEOM,4,'<float_array id="'+meshid+'-positions-array" count="'+str(len(vertices)*3)+'">'+float_values+'</float_array>')
 		self.writel(S_GEOM,4,'<technique_common>')
-		#Tells the software that is viewing the DAE how to parse the vertex array
+		#NTS: Tells the software that is viewing the DAE how to parse the vertex array - DL
 		self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-positions-array" count="'+str(len(vertices))+'" stride="3">')
 		self.writel(S_GEOM,5,'<param name="X" type="float"/>')
 		self.writel(S_GEOM,5,'<param name="Y" type="float"/>')
@@ -1219,7 +1227,12 @@ class DaeExporter:
 		il+=1
 
 		#self.writel(S_NODES,il,'<matrix sid="transform">'+strmtx(node.matrix_local)+'</matrix>')
-		self.writel(S_NODES,il,'<translate sid="translate">'+str(node.location[0])+' '+str(node.location[1])+' '+str(node.location[2])+'</translate>')
+		#Pull XYZ coordinates relative to parent object - DL
+		nodeXCoord=node.matrix_local.to_translation()[0]
+		nodeYCoord=node.matrix_local.to_translation()[1]
+		nodeZCoord=node.matrix_local.to_translation()[2]
+		#Write XYZ coordinates to the XML following the format of the 3DS Max DAE output
+		self.writel(S_NODES,il,'<translate sid="translate">'+str(nodeXCoord)+' '+str(nodeYCoord)+' '+str(nodeZCoord)+'</translate>')
 		print("NODE TYPE: "+node.type+" NAME: "+node.name)
 		if (node.type=="MESH"):
 			self.export_mesh_node(node,il)
@@ -1302,6 +1315,7 @@ class DaeExporter:
 	def export_animation_transform_channel(self,target,keys,matrices=True):
 
 		frame_total=len(keys)
+		#Following the formatting of the 3DS Max DAE output, the animation id should be the Parent object name with -anim suffix - DL
 		#anim_id=self.new_id("anim")
 		anim_id=target
 		self.writel(S_ANIM,1,'<animation id="'+anim_id+'-anim" name="'+anim_id+'">')
