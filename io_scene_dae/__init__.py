@@ -189,14 +189,30 @@ class HMRMPanel(bpy.types.Panel):
     bl_category = "Create"
     
     bpy.types.Scene.hardpoint_name = StringProperty(
-        name = "Name")
+        name = "Name",
+        default = "Default")
 
     bpy.types.Scene.utility_name = IntProperty(
         name = "Hardpoint")
+        
+    bpy.types.Scene.ship_name = StringProperty(
+        name = "Name",
+        default = "Default")
+        
+    bpy.types.Scene.lod_num = IntProperty(
+        name = "LOD")
     
     def draw(self, context):
         layout = self.layout
         scn = context.scene
+        
+        layout.label("Ship")
+        layout.prop(scn, 'ship_name')
+        layout.prop(scn,'lod_num')
+        layout.operator("hmrm.make_ship", "Convert to Ship")
+        
+        layout.separator()
+        layout.separator()
         
         layout.label("Weapons")
         layout.prop(scn, 'hardpoint_name')
@@ -211,6 +227,29 @@ class HMRMPanel(bpy.types.Panel):
         layout.operator("hmrm.make_repair", "Repair")
         layout.operator("hmrm.make_salvage", "Salvage")
         layout.operator("hmrm.make_capture","Capture")
+        
+class MakeShipLOD(bpy.types.Operator):
+    bl_idname = "hmrm.make_ship"
+    bl_label = "Add Weapon Hardpoint"
+    bl_options = {"UNDO"}
+ 
+    def invoke(self, context, event):
+        
+        jntName_LOD = "ROOT_LOD[" + str(context.scene.lod_num) + "]"
+        jntName = "JNT[" + context.scene.ship_name + "]"
+        
+        LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
+        context.scene.objects.link(LOD_jnt)
+        
+        ship_jnt = bpy.data.objects.new(jntName, None)
+        context.scene.objects.link(ship_jnt)
+        ship_jnt.parent = LOD_jnt
+        
+        bpy.context.selected_objects[0].name = "MULT[" + context.scene.ship_name + "]"
+        bpy.context.selected_objects[0].parent = ship_jnt
+        
+        
+        return {"FINISHED"}
         
 class MakeWeaponHardpoint(bpy.types.Operator):
     bl_idname = "hmrm.make_weapon"
