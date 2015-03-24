@@ -276,6 +276,9 @@ class MakeWeaponHardpoint(bpy.types.Operator):
         weapon_rest = bpy.data.objects.new(jntName_Rest, None)
         context.scene.objects.link(weapon_rest)
         
+        if context.scene.parent_name:
+            weapon_pos.parent = context.scene.objects[context.scene.parent_name]
+            
         weapon_dir.parent = weapon_pos
         weapon_rest.parent = weapon_pos
         
@@ -318,6 +321,9 @@ class MakeTurretHardpoint(bpy.types.Operator):
         weapon_muz = bpy.data.objects.new(jntName_Muz, None)
         context.scene.objects.link(weapon_muz)
         
+        if context.scene.parent_name:
+            weapon_pos.parent = context.scene.objects[context.scene.parent_name]
+            
         weapon_dir.parent = weapon_pos
         weapon_rest.parent = weapon_pos
         weapon_lat.parent = weapon_pos
@@ -355,6 +361,9 @@ class MakeRepairHardpoint(bpy.types.Operator):
         hardp_up = bpy.data.objects.new(jntName_Up, None)
         context.scene.objects.link(hardp_up)
         
+        if context.scene.parent_name:
+            hardp_pos.parent = context.scene.objects[context.scene.parent_name]
+            
         hardp_head.parent = hardp_pos
         hardp_left.parent = hardp_pos
         hardp_up.parent = hardp_pos
@@ -374,7 +383,7 @@ class MakeCaptureHardpoint(bpy.types.Operator):
     
     def invoke(self, context, event):
 
-        jntName_Pos = "JNT[CapturePoint" + str(context.scene.utility_name) + "]"
+        jntName_Pos = "JNT[CapturePoint" + str(context.scene.utility_name)+ "]"
         jntName_Head = "JNT[CapturePoint" + str(context.scene.utility_name) + "Heading]"
         jntName_Left = "JNT[CapturePoint" + str(context.scene.utility_name) + "Left]"
         jntName_Up = "JNT[CapturePoint" + str(context.scene.utility_name) + "Up]"
@@ -390,6 +399,9 @@ class MakeCaptureHardpoint(bpy.types.Operator):
         
         hardp_up = bpy.data.objects.new(jntName_Up, None)
         context.scene.objects.link(hardp_up)
+        
+        if context.scene.parent_name:
+            hardp_pos.parent = context.scene.objects[context.scene.parent_name]
         
         hardp_head.parent = hardp_pos
         hardp_left.parent = hardp_pos
@@ -427,6 +439,9 @@ class MakeSalvageardpoint(bpy.types.Operator):
         hardp_up = bpy.data.objects.new(jntName_Up, None)
         context.scene.objects.link(hardp_up)
         
+        if context.scene.parent_name:
+            hardp_pos.parent = context.scene.objects[context.scene.parent_name]
+            
         hardp_head.parent = hardp_pos
         hardp_left.parent = hardp_pos
         hardp_up.parent = hardp_pos
