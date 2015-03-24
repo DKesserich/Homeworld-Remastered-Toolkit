@@ -188,6 +188,9 @@ class HMRMPanel(bpy.types.Panel):
     bl_context = "objectmode"
     bl_category = "Create"
     
+    bpy.types.Scene.parent_name = StringProperty(
+        name = "Parent")
+    
     bpy.types.Scene.hardpoint_name = StringProperty(
         name = "Name",
         default = "Default")
@@ -205,7 +208,7 @@ class HMRMPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scn = context.scene
-        
+                
         layout.label("Ship")
         layout.prop(scn, 'ship_name')
         layout.prop(scn,'lod_num')
@@ -216,6 +219,7 @@ class HMRMPanel(bpy.types.Panel):
         
         layout.label("Weapons")
         layout.prop(scn, 'hardpoint_name')
+        layout.prop_search(scn, "parent_name", scn, "objects")
         layout.operator("hmrm.make_weapon", "Weapon")
         layout.operator("hmrm.make_turret", "Turret")
         
@@ -224,6 +228,7 @@ class HMRMPanel(bpy.types.Panel):
         
         layout.label("Utilities")
         layout.prop(scn,'utility_name')
+        layout.prop_search(scn, "parent_name", scn, "objects")
         layout.operator("hmrm.make_repair", "Repair")
         layout.operator("hmrm.make_salvage", "Salvage")
         layout.operator("hmrm.make_capture","Capture")
@@ -318,8 +323,10 @@ class MakeTurretHardpoint(bpy.types.Operator):
         weapon_lat.parent = weapon_pos
         weapon_muz.parent = weapon_pos
         
-        weapon_dir.location.xyz = [0,0,1]
-        weapon_rest.location.xyz = [0,1,0]
+        weapon_pos.location = bpy.context.scene.cursor_location
+        weapon_pos.rotation_euler.x = 1.57079633
+        weapon_dir.location.xyz = [0,1,0]
+        weapon_rest.location.xyz = [0,0,1]
         
         
         return {"FINISHED"}
@@ -352,9 +359,11 @@ class MakeRepairHardpoint(bpy.types.Operator):
         hardp_left.parent = hardp_pos
         hardp_up.parent = hardp_pos
         
-        hardp_up.location.xyz = [0,0,1]
-        hardp_head.location.xyz = [0,1,0]
-        hardp_left.location.xyz = [-1,0,0]
+        hardp_pos.location = bpy.context.scene.cursor_location
+        hardp_pos.rotation_euler.x = 1.57079633
+        hardp_up.location.xyz = [0,1,0]
+        hardp_head.location.xyz = [0,0,1]
+        hardp_left.location.xyz = [1,0,0]
         
         return {"FINISHED"}
     
@@ -386,9 +395,11 @@ class MakeCaptureHardpoint(bpy.types.Operator):
         hardp_left.parent = hardp_pos
         hardp_up.parent = hardp_pos
         
-        hardp_up.location.xyz = [0,0,1]
-        hardp_head.location.xyz = [0,1,0]
-        hardp_left.location.xyz = [-1,0,0]
+        hardp_pos.location = bpy.context.scene.cursor_location
+        hardp_pos.rotation_euler.x = 1.57079633
+        hardp_up.location.xyz = [0,1,0]
+        hardp_head.location.xyz = [0,0,1]
+        hardp_left.location.xyz = [1,0,0]
         
         return {"FINISHED"}
     
@@ -420,9 +431,11 @@ class MakeSalvageardpoint(bpy.types.Operator):
         hardp_left.parent = hardp_pos
         hardp_up.parent = hardp_pos
         
-        hardp_up.location.xyz = [0,0,1]
-        hardp_head.location.xyz = [0,1,0]
-        hardp_left.location.xyz = [-1,0,0]
+        hardp_pos.location = bpy.context.scene.cursor_location
+        hardp_pos.rotation_euler.x = 1.57079633
+        hardp_up.location.xyz = [0,1,0]
+        hardp_head.location.xyz = [0,0,1]
+        hardp_left.location.xyz = [1,0,0]
         
         return {"FINISHED"}
 
