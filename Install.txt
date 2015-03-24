@@ -1,3 +1,9 @@
-As of now: Copy the io_scene_dae folder to your Blender/scripts/addons/ folder. Turn on the Better Collada Exporter in the addons in Blender.
-
+As of now: 
+Copy the io_scene_dae folder to your Blender/scripts/addons/ folder. Turn on the Better Collada Exporter in the addons in Blender.
 I'll figure out changing the add-on name and folder name to avoid conflicting with previously installed versions later.
+
+
+Alternatively: place the repo in "C:\Users\@@@\AppData\Roaming\Blender Foundation\Blender\2.74\scripts\addons"
+Then run the script "__init__.py" from the Blender text editor to enable.
+
+No enabling of script required; however script must be run every time you want to use it - upside is you can recieve latest changes without having to copy scripts to new location. Recommend opening the text editor in a panel and pressing "Ctrl U" to save current panels/objects etc. as default blender startup (note, script must be reopened every time - as a startup file does not load changes in .py file).
