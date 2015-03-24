@@ -279,9 +279,9 @@ class MakeWeaponHardpoint(bpy.types.Operator):
         #and HODOR expects Y-Up, offset Y for Dir and Z for rest.
         #Rotate Pos 90 degrees on X to align with Blender world space.
         weapon_pos.location = bpy.context.scene.cursor_location
-	weapon_pos.rotation_euler.x = 1.57079633		
-	weapon_dir.location.xyz = [0,1,0]
-	weapon_rest.location.xyz = [0,0,1]
+        weapon_pos.rotation_euler.x = 1.57079633
+        weapon_dir.location.xyz = [0,1,0]
+        weapon_rest.location.xyz = [0,0,1]
         
         return {"FINISHED"}
     
