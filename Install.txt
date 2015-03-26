@@ -1,6 +1,5 @@
 As of now: 
-Copy the io_scene_dae folder to your Blender/scripts/addons/ folder. Turn on the Better Collada Exporter in the addons in Blender.
-I'll figure out changing the add-on name and folder name to avoid conflicting with previously installed versions later.
+Copy the HW_Toolkit folder to your Blender/scripts/addons/ folder. Turn on the Homeworld Remastered Toolkit in the addons in Blender.
 
 
 Alternatively: place the repo in "C:\Users\@@@\AppData\Roaming\Blender Foundation\Blender\2.74\scripts\addons"
