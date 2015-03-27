@@ -312,6 +312,7 @@ class MakeShipLOD(bpy.types.Operator):
         
         bpy.context.selected_objects[0].location.xyz = (0,0,0)
         bpy.context.selected_objects[0].name = "MULT[" + context.scene.ship_name + "]"
+        bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.ship_name + "]"
         bpy.context.selected_objects[0].parent = ship_jnt
 
         
