@@ -19,11 +19,13 @@
 # <pep8-80 compliant>
 
 bl_info = {
+
     "name": "Homeworld Remastered Toolkit",
-    "author": "Juan Linietsky, David Lejeune, Drache93",
+    "author": "Juan Linietsky, David Lejeune, Dominic Cassidy",
     "blender": (2, 5, 8),
     "api": 38691,
     "location": "File > Import-Export",
+
     "description": ("A combined toolkit for creating content for Homeworld Remastered. Includes a modified version of the Better Collada Exporter, and new create options to automate Joint creation"),
     "warning": "",
     "wiki_url": (""),
@@ -195,15 +197,24 @@ class HMRMPanel(bpy.types.Panel):
         name = "Name",
         default = "Default")
 
+    bpy.types.Scene.hardpoint_num = IntProperty(
+        name = "Number",
+        min = 0)
+        
     bpy.types.Scene.utility_name = IntProperty(
-        name = "Hardpoint")
+        name = "Hardpoint",
+        min = 0)
         
     bpy.types.Scene.ship_name = StringProperty(
         name = "Name",
         default = "Default")
         
     bpy.types.Scene.lod_num = IntProperty(
-        name = "LOD")
+        name = "LOD",
+        min = 0,
+        max = 3,
+        default = 0
+        )
     
     def draw(self, context):
         layout = self.layout
@@ -218,8 +229,9 @@ class HMRMPanel(bpy.types.Panel):
         layout.separator()
         
         layout.label("Weapons")
-        layout.prop(scn, 'hardpoint_name')
         layout.prop_search(scn, "parent_name", scn, "objects")
+        layout.prop(scn, 'hardpoint_name')
+        layout.prop(scn,'hardpoint_num')
         layout.operator("hmrm.make_weapon", "Weapon")
         layout.operator("hmrm.make_turret", "Turret")
         
@@ -227,8 +239,8 @@ class HMRMPanel(bpy.types.Panel):
         layout.separator()
         
         layout.label("Utilities")
-        layout.prop(scn,'utility_name')
         layout.prop_search(scn, "parent_name", scn, "objects")
+        layout.prop(scn,'utility_name')
         layout.operator("hmrm.make_repair", "Repair")
         layout.operator("hmrm.make_salvage", "Salvage")
         layout.operator("hmrm.make_capture","Capture")
@@ -257,43 +269,49 @@ class MakeShipLOD(bpy.types.Operator):
         return {"FINISHED"}
         
 class MakeWeaponHardpoint(bpy.types.Operator):
-	bl_idname = "hmrm.make_weapon"
-	bl_label = "Add Weapon Hardpoint"
-	bl_options = {"UNDO"}
-	
-	def invoke(self, context, event):
-		jntName_Pos = "JNT[Weapon_" + context.scene.hardpoint_name + "_Position]"
-		jntName_Rest = "JNT[Weapon_" + context.scene.hardpoint_name + "_Rest]"
-		jntName_Dir = "JNT[Weapon_" + context.scene.hardpoint_name + "_Direction]"
-		jntName_Muz = "JNT[Weapon_" + context.scene.hardpoint_name+"_Muzzle]"
+    bl_idname = "hmrm.make_weapon"
+    bl_label = "Add Weapon Hardpoint"
+    bl_options = {"UNDO"}
+ 
+    def invoke(self, context, event):
+        
+        tempName = context.scene.hardpoint_name
+        
+        if context.scene.hardpoint_num > 0:
+            tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
+            
+        jntName_Pos = "JNT[Weapon_" + tempName + "_Position]"
+        jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
+        jntName_Dir = "JNT[Weapon_" + tempName + "_Direction]"
+        jntName_Muz = "JNT[Weapon_" + tempName +"_Muzzle]"
+        weapon_pos = bpy.data.objects.new(jntName_Pos, None)
+        context.scene.objects.link(weapon_pos)
+        
+        weapon_dir = bpy.data.objects.new(jntName_Dir, None)
+        context.scene.objects.link(weapon_dir)
+        
+        weapon_rest = bpy.data.objects.new(jntName_Rest, None)
+        context.scene.objects.link(weapon_rest)
+
+        weapon_muzzle = bpy.data.objects.new(jntName_Muz, None)
+        context.scene.objects.link(weapon_muzzle)
 		
-		weapon_pos = bpy.data.objects.new(jntName_Pos, None)
-		context.scene.objects.link(weapon_pos)
-		weapon_dir = bpy.data.objects.new(jntName_Dir, None)
-		context.scene.objects.link(weapon_dir)
-		weapon_rest = bpy.data.objects.new(jntName_Rest, None)
-		context.scene.objects.link(weapon_rest)
-		weapon_muzzle = bpy.data.objects.new(jntName_Muz, None)
-		context.scene.objects.link(weapon_muzzle)
-		
-		if context.scene.parent_name:
-			weapon_pos.parent = context.scene.objects[context.scene.parent_name]
-		
-		weapon_dir.parent = weapon_pos
-		weapon_rest.parent = weapon_pos
-		weapon_muzzle.parent = weapon_pos
-		
-		#Following standard Blender workflow, create the object at the 3D Cursor location
-		#Also, since the Direction and Rest joints are in local space for Postion,
-		#and HODOR expects Y-Up, offset Y for Dir and Z for rest.
-		#Rotate Pos 90 degrees on X to align with Blender world space.
-		weapon_pos.location = bpy.context.scene.cursor_location
-		weapon_pos.rotation_euler.x = 1.57079633
-		weapon_dir.location.xyz = [0,1,0]
-		weapon_rest.location.xyz = [0,0,1]
-		weapon_muzzle.location.xyz = [0,0,-0.25]
-		
-		return {"FINISHED"}
+        if context.scene.parent_name:
+            weapon_pos.parent = context.scene.objects[context.scene.parent_name]
+            
+        weapon_dir.parent = weapon_pos
+        weapon_rest.parent = weapon_pos
+        weapon_muzzle.parent = weapon_pos
+        #Following standard Blender workflow, create the object at the 3D Cursor location
+        #Also, since the Direction and Rest joints are in local space for Postion,
+        #and HODOR expects Y-Up, offset Y for Dir and Z for rest.
+        #Rotate Pos 90 degrees on X to align with Blender world space.
+        weapon_pos.location = bpy.context.scene.cursor_location
+        weapon_pos.rotation_euler.x = 1.57079633
+        weapon_dir.location.xyz = [0,1,0]
+        weapon_rest.location.xyz = [0,0,1]
+        weapon_muzzle.location.xyz = [0,0,-0.25]
+        return {"FINISHED"}
     
 class MakeTurretHardpoint(bpy.types.Operator):
     bl_idname = "hmrm.make_turret"
@@ -301,12 +319,17 @@ class MakeTurretHardpoint(bpy.types.Operator):
     bl_options = {"UNDO"}
     
     def invoke(self, context, event):
+        
+        tempName = context.scene.hardpoint_name
+        
+        if context.scene.hardpoint_num > 0:
+            tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
 
-        jntName_Pos = "JNT[Weapon_" + context.scene.hardpoint_name + "_Position]"
-        jntName_Rest = "JNT[Weapon_" + context.scene.hardpoint_name + "_Rest]"
-        jntName_Dir = "JNT[Weapon_" + context.scene.hardpoint_name + "_Direction]"
-        jntName_Lat = "JNT[Weapon_" + context.scene.hardpoint_name + "_Latitude]"
-        jntName_Muz = "JNT[Weapon_" + context.scene.hardpoint_name + "_Muzzle]"
+        jntName_Pos = "JNT[Weapon_" + tempName + "_Position]"
+        jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
+        jntName_Dir = "JNT[Weapon_" + tempName + "_Direction]"
+        jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
+        jntName_Muz = "JNT[Weapon_" + tempName + "_Muzzle]"
         
         weapon_pos = bpy.data.objects.new(jntName_Pos, None)
         context.scene.objects.link(weapon_pos)
