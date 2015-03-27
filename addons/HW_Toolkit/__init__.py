@@ -19,13 +19,11 @@
 # <pep8-80 compliant>
 
 bl_info = {
-
     "name": "Homeworld Remastered Toolkit",
     "author": "Juan Linietsky, David Lejeune, Dominic Cassidy",
     "blender": (2, 5, 8),
     "api": 38691,
     "location": "File > Import-Export",
-
     "description": ("A combined toolkit for creating content for Homeworld Remastered. Includes a modified version of the Better Collada Exporter, and new create options to automate Joint creation"),
     "warning": "",
     "wiki_url": (""),
@@ -289,19 +287,33 @@ class MakeShipLOD(bpy.types.Operator):
  
     def invoke(self, context, event):
         
+        jntName_info = "ROOT_INFO"
+        jntName_class = "Class[MultiMesh]_Version[512]"
+        jntName_uv = "UVSets[1]"
         jntName_LOD = "ROOT_LOD[" + str(context.scene.lod_num) + "]"
         jntName = "JNT[" + context.scene.ship_name + "]"
+        
+        class_jnt = bpy.data.objects.new(jntName_class, None)
+        context.scene.objects.link(class_jnt)
+        uv_joint = bpy.data.objects.new(jntName_uv, None)
+        context.scene.objects.link(uv_joint)
+        info_jnt = bpy.data.objects.new(jntName_info, None)
+        context.scene.objects.link(info_jnt)
         
         LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
         context.scene.objects.link(LOD_jnt)
         
         ship_jnt = bpy.data.objects.new(jntName, None)
         context.scene.objects.link(ship_jnt)
+        
+        class_jnt.parent = info_jnt
+        uv_joint.parent = info_jnt
         ship_jnt.parent = LOD_jnt
         
+        bpy.context.selected_objects[0].location.xyz = (0,0,0)
         bpy.context.selected_objects[0].name = "MULT[" + context.scene.ship_name + "]"
         bpy.context.selected_objects[0].parent = ship_jnt
-        
+
         
         return {"FINISHED"}
         
