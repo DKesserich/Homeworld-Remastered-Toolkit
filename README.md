@@ -9,4 +9,4 @@ Better Collada Exporter Originally Created and Copyright by Juan Linietsky (juan
 
 HW Edition fork created by David Lejeune (daffydlejeune42@hotmail.com). I claim no copyright to this version.
 
-Joint Tools contributed by Drache93.
+Joint Tools contributed by Dominic Cassidy (drache9335@gmail.com).
