@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+<asset>
+	<contributor>
+		<author> Anonymous </author>
+		<authoring_tool> Collada Exporter for Blender 2.6+, by Juan Linietsky (juan@codenix.com) </authoring_tool>
+	</contributor>
+	<created>2015-03-27T21:52:17Z     </created>
+	<modified>2015-03-27T21:52:17Z</modified>
+	<unit meter="1.0" name="meter"/>
+	<up_axis>Z_UP</up_axis>
+</asset>
+<library_images>
+</library_images>
+<library_materials>
+	<material id="Material" name="Material">
+		<instance_effect url="#Material-fx"/>
+	</material>
+</library_materials>
+<library_effects>
+	<effect id="Material-fx" name="Material">
+		<profile_COMMON>
+			<technique sid="standard">
+				<phong>
+					<emission>
+						<color sid="emission">  0.0 0.0 0.0  </color>
+					</emission>
+					<ambient>
+						<color sid="ambient">  0.0 0.0 0.0  1.0</color>
+					</ambient>
+					<diffuse>
+						<color sid="diffuse">  0.6400000190734865 0.6400000190734865 0.6400000190734865 </color>
+					</diffuse>
+					<specular>
+						<color sid="specular">  0.5 0.5 0.5 </color>
+					</specular>
+					<shininess>
+						<float sid="shininess">50</float>
+					</shininess>
+					<reflective>
+						<color>  1.0 1.0 1.0 </color>
+					</reflective>
+					<transparency>
+						<float sid="transparency">0.000000</float>
+					</transparency>
+				</phong>
+			</technique>
+		</profile_COMMON>
+	</effect>
+</library_effects>
+<library_geometries>
+	<geometry id="MULT[BoxShip]" name="MULT[BoxShip]">
+		<mesh>
+			<source id="MULT[BoxShip]-positions">
+				<float_array id="MULT[BoxShip]-positions-array" count="72"> 1.0 0.9999999403953552 -1.0 1.0 -1.0 -1.0 -1.0000001192092896 -0.9999998211860657 -1.0 -0.9999996423721313 1.0000003576278687 -1.0 1.0000004768371582 0.999999463558197 1.0 -0.9999999403953552 1.0 1.0 -1.0000003576278687 -0.9999996423721313 1.0 0.9999993443489075 -1.0000005960464478 1.0 1.0 0.9999999403953552 -1.0 1.0000004768371582 0.999999463558197 1.0 0.9999993443489075 -1.0000005960464478 1.0 1.0 -1.0 -1.0 1.0 -1.0 -1.0 0.9999993443489075 -1.0000005960464478 1.0 -1.0000003576278687 -0.9999996423721313 1.0 -1.0000001192092896 -0.9999998211860657 -1.0 -1.0000001192092896 -0.9999998211860657 -1.0 -1.0000003576278687 -0.9999996423721313 1.0 -0.9999999403953552 1.0 1.0 -0.9999996423721313 1.0000003576278687 -1.0 1.0000004768371582 0.999999463558197 1.0 1.0 0.9999999403953552 -1.0 -0.9999996423721313 1.0000003576278687 -1.0 -0.9999999403953552 1.0 1.0</float_array>
+				<technique_common>
+				<accessor source="#MULT[BoxShip]-positions-array" count="24" stride="3">
+					<param name="X" type="float"/>
+					<param name="Y" type="float"/>
+					<param name="Z" type="float"/>
+				</accessor>
+				</technique_common>
+			</source>
+			<source id="MULT[BoxShip]-normals">
+				<float_array id="MULT[BoxShip]-normals-array" count="72"> 0.0 0.0 -1.0 0.0 0.0 -1.0 0.0 0.0 -1.0 0.0 0.0 -1.0 2.9802322387695312e-08 0.0 1.0 2.9802322387695312e-08 0.0 1.0 2.9802322387695312e-08 0.0 1.0 2.9802322387695312e-08 0.0 1.0 1.0 -2.980232238769531e-07 4.470339831641468e-08 1.0 -2.980232238769531e-07 4.470339831641468e-08 1.0 -2.980232238769531e-07 4.470339831641468e-08 1.0 -2.980232238769531e-07 4.470339831641468e-08 -2.831220911048149e-07 -1.0 -1.7881397695873602e-07 -2.831220911048149e-07 -1.0 -1.7881397695873602e-07 -2.831220911048149e-07 -1.0 -1.7881397695873602e-07 -2.831220911048149e-07 -1.0 -1.7881397695873602e-07 -1.0 2.384185791015625e-07 -1.341104365337742e-07 -1.0 2.384185791015625e-07 -1.341104365337742e-07 -1.0 2.384185791015625e-07 -1.341104365337742e-07 -1.0 2.384185791015625e-07 -1.341104365337742e-07 2.384185791015625e-07 1.0 1.6391278734317893e-07 2.384185791015625e-07 1.0 1.6391278734317893e-07 2.384185791015625e-07 1.0 1.6391278734317893e-07 2.384185791015625e-07 1.0 1.6391278734317893e-07</float_array>
+				<technique_common>
+				<accessor source="#MULT[BoxShip]-normals-array" count="24" stride="3">
+					<param name="X" type="float"/>
+					<param name="Y" type="float"/>
+					<param name="Z" type="float"/>
+				</accessor>
+				</technique_common>
+			</source>
+			<vertices id="MULT[BoxShip]-vertices">
+				<input semantic="POSITION" source="#MULT[BoxShip]-positions"/>
+			</vertices>
+			<triangles count="6" material="Material">
+				<input semantic="VERTEX" offset="0" source="#MULT[BoxShip]-vertices"/>
+				<input semantic="NORMAL" offset="0" source="#MULT[BoxShip]-normals"/>
+				<p> 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 </p>
+			</triangles>
+		</mesh>
+	</geometry>
+	<geometry id="ETSH[EngineShape1]" name="ETSH[EngineShape1]">
+		<mesh>
+			<source id="ETSH[EngineShape1]-positions">
+				<float_array id="ETSH[EngineShape1]-positions-array" count="12"> -0.5 8.146034247147327e-08 -0.5 -0.5 -8.146034247147327e-08 0.5 0.5 -8.146034247147327e-08 0.5 0.5 8.146034247147327e-08 -0.5</float_array>
+				<technique_common>
+				<accessor source="#ETSH[EngineShape1]-positions-array" count="4" stride="3">
+					<param name="X" type="float"/>
+					<param name="Y" type="float"/>
+					<param name="Z" type="float"/>
+				</accessor>
+				</technique_common>
+			</source>
+			<source id="ETSH[EngineShape1]-normals">
+				<float_array id="ETSH[EngineShape1]-normals-array" count="12"> 0.0 1.0 1.6292068494294654e-07 0.0 1.0 1.6292068494294654e-07 0.0 1.0 1.6292068494294654e-07 0.0 1.0 1.6292068494294654e-07</float_array>
+				<technique_common>
+				<accessor source="#ETSH[EngineShape1]-normals-array" count="4" stride="3">
+					<param name="X" type="float"/>
+					<param name="Y" type="float"/>
+					<param name="Z" type="float"/>
+				</accessor>
+				</technique_common>
+			</source>
+			<vertices id="ETSH[EngineShape1]-vertices">
+				<input semantic="POSITION" source="#ETSH[EngineShape1]-positions"/>
+			</vertices>
+			<triangles count="1">
+				<input semantic="VERTEX" offset="0" source="#ETSH[EngineShape1]-vertices"/>
+				<input semantic="NORMAL" offset="0" source="#ETSH[EngineShape1]-normals"/>
+				<p> 0 1 2 3 </p>
+			</triangles>
+		</mesh>
+	</geometry>
+</library_geometries>
+<library_controllers>
+</library_controllers>
+<library_cameras>
+</library_cameras>
+<library_lights>
+</library_lights>
+<library_visual_scenes>
+	<visual_scene id="id-scene-1" name="scene">
+		<node name="ROOT_LOD[0]" id="ROOT_LOD[0]" sid="ROOT_LOD[0]E">
+			<translate sid="translate">0.0 0.0 0.0</translate>
+			<node name="JNT[BoxShip]" id="JNT[BoxShip]" sid="JNT[BoxShip]E">
+				<translate sid="translate">0.0 0.0 0.0</translate>
+				<node name="MULT[BoxShip]" id="MULT[BoxShip]" sid="MULT[BoxShip]E">
+					<translate sid="translate">0.0 0.0 0.0</translate>
+					<instance_geometry url="#MULT[BoxShip]">
+						<bind_material>
+							<technique_common>
+								<instance_material symbol="Material" target="#Material"/>
+							</technique_common>
+						</bind_material>
+					</instance_geometry>
+				</node>
+			</node>
+			<node name="JNT[EngineNozzle1]" id="JNT[EngineNozzle1]" sid="JNT[EngineNozzle1]E">
+				<translate sid="translate">0.0 1.100000023841858 0.0</translate>
+				<node name="BURN[EngineBurn1]" id="BURN[EngineBurn1]" sid="BURN[EngineBurn1]E">
+					<translate sid="translate">0.0 0.0 0.0</translate>
+					<node name="Flame[0]_Div[0]" id="Flame[0]_Div[0]" sid="Flame[0]_Div[0]E">
+						<translate sid="translate">0.0 0.0 0.0</translate>
+					</node>
+					<node name="Flame[0]_Div[1]" id="Flame[0]_Div[1]" sid="Flame[0]_Div[1]E">
+						<translate sid="translate">0.0 0.9999998807907104 4.371138828673793e-08</translate>
+					</node>
+					<node name="Flame[0]_Div[2]" id="Flame[0]_Div[2]" sid="Flame[0]_Div[2]E">
+						<translate sid="translate">0.0 1.9999998807907104 8.742277657347586e-08</translate>
+					</node>
+					<node name="Flame[0]_Div[3]" id="Flame[0]_Div[3]" sid="Flame[0]_Div[3]E">
+						<translate sid="translate">0.0 3.0 1.3113415775478643e-07</translate>
+					</node>
+					<node name="Flame[0]_Div[4]" id="Flame[0]_Div[4]" sid="Flame[0]_Div[4]E">
+						<translate sid="translate">0.0 4.0 1.7484555314695172e-07</translate>
+					</node>
+				</node>
+				<node name="ETSH[EngineShape1]" id="ETSH[EngineShape1]" sid="ETSH[EngineShape1]E">
+					<translate sid="translate">0.0 0.0 0.0</translate>
+					<instance_geometry url="#ETSH[EngineShape1]">
+					</instance_geometry>
+				</node>
+			</node>
+		</node>
+		<node name="ROOT_INFO" id="ROOT_INFO" sid="ROOT_INFOE">
+			<translate sid="translate">0.0 0.0 0.0</translate>
+			<node name="Class[MultiMesh]_Version[512]" id="Class[MultiMesh]_Version[512]" sid="Class[MultiMesh]_Version[512]E">
+				<translate sid="translate">0.0 0.0 0.0</translate>
+			</node>
+			<node name="UVSets[1]" id="UVSets[1]" sid="UVSets[1]E">
+				<translate sid="translate">0.0 0.0 0.0</translate>
+			</node>
+		</node>
+	</visual_scene>
+</library_visual_scenes>
+<library_animations>
+</library_animations>
+<scene>
+	<instance_visual_scene url="#id-scene-1" />
+</scene>
+</COLLADA>
