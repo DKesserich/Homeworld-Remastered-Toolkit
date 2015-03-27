@@ -183,7 +183,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
 
 class HMRMPanel(bpy.types.Panel):
     """Creates a Panel in the Create window"""
-    bl_label = "HomeworldRM"
+    bl_label = "Hardpoints"
     bl_idname = "HMRM_TOOLS"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
@@ -226,24 +226,61 @@ class HMRMPanel(bpy.types.Panel):
         layout.operator("hmrm.make_ship", "Convert to Ship")
         
         layout.separator()
-        layout.separator()
         
         layout.label("Weapons")
         layout.prop_search(scn, "parent_name", scn, "objects")
         layout.prop(scn, 'hardpoint_name')
         layout.prop(scn,'hardpoint_num')
-        layout.operator("hmrm.make_weapon", "Weapon")
-        layout.operator("hmrm.make_turret", "Turret")
+        layout.operator("hmrm.make_weapon", "Weapon").makeTurret = False
+        layout.operator("hmrm.make_weapon", "Turret").makeTurret = True
         
-        layout.separator()
         layout.separator()
         
         layout.label("Utilities")
         layout.prop_search(scn, "parent_name", scn, "objects")
         layout.prop(scn,'utility_name')
-        layout.operator("hmrm.make_repair", "Repair")
-        layout.operator("hmrm.make_salvage", "Salvage")
-        layout.operator("hmrm.make_capture","Capture")
+        layout.operator("hmrm.make_hardpoint", "Repair").hardName = "RepairPoint"
+        layout.operator("hmrm.make_hardpoint", "Salvage").hardName = "SalvagePoint"
+        layout.operator("hmrm.make_hardpoint","Capture").hardName = "CapturePoint"
+        
+        
+class HMRMPanelEngines(bpy.types.Panel):
+    """Creates a Panel in the Create window"""
+    bl_label = "Engines"
+    bl_idname = "HMRM_TOOLS_ENGINES"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'TOOLS'
+    bl_context = "objectmode"
+    bl_category = "Create"   
+    
+    bpy.types.Scene.engine_small = IntProperty(
+        name = "Engine",
+        min = 1,
+        default = 1
+        )   
+        
+    bpy.types.Scene.engine_small_flame = IntProperty(
+        name = "Flame Div",
+        min = 1,
+        default = 1
+        )   
+    
+    def draw(self, context):
+        layout = self.layout
+        scn = context.scene
+        
+        layout.label("Large")
+        layout.prop_search(scn, "parent_name", scn, "objects")
+        
+        layout.separator()
+        
+        layout.label("Small")
+        layout.prop_search(scn, "parent_name", scn, "objects")
+        layout.prop(scn,'engine_small')
+        layout.prop(scn,'engine_small_flame')
+        layout.operator("hmrm.make_engine_small","Add").useSelected = False
+        layout.operator("hmrm.make_engine_small","Convert Selection").useSelected = True
+    
         
 class MakeShipLOD(bpy.types.Operator):
     bl_idname = "hmrm.make_ship"
@@ -272,6 +309,7 @@ class MakeWeaponHardpoint(bpy.types.Operator):
     bl_idname = "hmrm.make_weapon"
     bl_label = "Add Weapon Hardpoint"
     bl_options = {"UNDO"}
+    makeTurret = bpy.props.BoolProperty()
  
     def invoke(self, context, event):
         
@@ -284,6 +322,11 @@ class MakeWeaponHardpoint(bpy.types.Operator):
         jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
         jntName_Dir = "JNT[Weapon_" + tempName + "_Direction]"
         jntName_Muz = "JNT[Weapon_" + tempName +"_Muzzle]"
+        if self.makeTurret:
+            jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
+            weapon_lat = bpy.data.objects.new(jntName_Lat, None)
+            context.scene.objects.link(weapon_lat)
+        
         weapon_pos = bpy.data.objects.new(jntName_Pos, None)
         context.scene.objects.link(weapon_pos)
         
@@ -302,77 +345,33 @@ class MakeWeaponHardpoint(bpy.types.Operator):
         weapon_dir.parent = weapon_pos
         weapon_rest.parent = weapon_pos
         weapon_muzzle.parent = weapon_pos
+        if self.makeTurret:
+            weapon_lat.parent = weapon_pos
+        
         #Following standard Blender workflow, create the object at the 3D Cursor location
         #Also, since the Direction and Rest joints are in local space for Postion,
         #and HODOR expects Y-Up, offset Y for Dir and Z for rest.
         #Rotate Pos 90 degrees on X to align with Blender world space.
+        
         weapon_pos.location = bpy.context.scene.cursor_location
         weapon_pos.rotation_euler.x = 1.57079633
         weapon_dir.location.xyz = [0,1,0]
         weapon_rest.location.xyz = [0,0,1]
         weapon_muzzle.location.xyz = [0,0,-0.25]
         return {"FINISHED"}
-    
-class MakeTurretHardpoint(bpy.types.Operator):
-    bl_idname = "hmrm.make_turret"
-    bl_label = "Add Turret Hardpoint"
+  
+class MakeHardpoint(bpy.types.Operator):
+    bl_idname = "hmrm.make_hardpoint"
+    bl_label = "Add Hardpoint"
     bl_options = {"UNDO"}
-    
-    def invoke(self, context, event):
-        
-        tempName = context.scene.hardpoint_name
-        
-        if context.scene.hardpoint_num > 0:
-            tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
-
-        jntName_Pos = "JNT[Weapon_" + tempName + "_Position]"
-        jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
-        jntName_Dir = "JNT[Weapon_" + tempName + "_Direction]"
-        jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
-        jntName_Muz = "JNT[Weapon_" + tempName + "_Muzzle]"
-        
-        weapon_pos = bpy.data.objects.new(jntName_Pos, None)
-        context.scene.objects.link(weapon_pos)
-        
-        weapon_dir = bpy.data.objects.new(jntName_Dir, None)
-        context.scene.objects.link(weapon_dir)
-        
-        weapon_rest = bpy.data.objects.new(jntName_Rest, None)
-        context.scene.objects.link(weapon_rest)
-        
-        weapon_lat = bpy.data.objects.new(jntName_Lat, None)
-        context.scene.objects.link(weapon_lat)
-        
-        weapon_muz = bpy.data.objects.new(jntName_Muz, None)
-        context.scene.objects.link(weapon_muz)
-        
-        if context.scene.parent_name:
-            weapon_pos.parent = context.scene.objects[context.scene.parent_name]
-            
-        weapon_dir.parent = weapon_pos
-        weapon_rest.parent = weapon_pos
-        weapon_lat.parent = weapon_pos
-        weapon_muz.parent = weapon_pos
-        
-        weapon_pos.location = bpy.context.scene.cursor_location
-        weapon_pos.rotation_euler.x = 1.57079633
-        weapon_dir.location.xyz = [0,1,0]
-        weapon_rest.location.xyz = [0,0,1]
-        
-        
-        return {"FINISHED"}
-		
-class MakeRepairHardpoint(bpy.types.Operator):
-    bl_idname = "hmrm.make_repair"
-    bl_label = "Add Repair Hardpoint"
-    bl_options = {"UNDO"}
+    hardName = bpy.props.StringProperty()
     
     def invoke(self, context, event):
 
-        jntName_Pos = "JNT[RepairPoint" + str(context.scene.utility_name) + "]"
-        jntName_Head = "JNT[RepairPoint" + str(context.scene.utility_name) + "Heading]"
-        jntName_Left = "JNT[RepairPoint" + str(context.scene.utility_name) + "Left]"
-        jntName_Up = "JNT[RepairPoint" + str(context.scene.utility_name) + "Up]"
+        jntName_Pos = "JNT[" + self.hardName + str(context.scene.utility_name) + "]"
+        jntName_Head = "JNT[" + self.hardName + str(context.scene.utility_name) + "Heading]"
+        jntName_Left = "JNT[" + self.hardName + str(context.scene.utility_name) + "Left]"
+        jntName_Up = "JNT[" + self.hardName + str(context.scene.utility_name) + "Up]"
         
         hardp_pos = bpy.data.objects.new(jntName_Pos, None)
         context.scene.objects.link(hardp_pos)
@@ -401,83 +400,61 @@ class MakeRepairHardpoint(bpy.types.Operator):
         
         return {"FINISHED"}
     
-class MakeCaptureHardpoint(bpy.types.Operator):
-    bl_idname = "hmrm.make_capture"
-    bl_label = "Add Capture Hardpoint"
+    
+class MakeEngineSmall(bpy.types.Operator):
+    bl_idname = "hmrm.make_engine_small"
+    bl_label = "Create Small Engine"
     bl_options = {"UNDO"}
+    useSelected = bpy.props.BoolProperty()
     
     def invoke(self, context, event):
-
-        jntName_Pos = "JNT[CapturePoint" + str(context.scene.utility_name)+ "]"
-        jntName_Head = "JNT[CapturePoint" + str(context.scene.utility_name) + "Heading]"
-        jntName_Left = "JNT[CapturePoint" + str(context.scene.utility_name) + "Left]"
-        jntName_Up = "JNT[CapturePoint" + str(context.scene.utility_name) + "Up]"
+    
+        jntNozzle = "JNT[EngineNozzle" + str(context.scene.engine_small) + "]"
+        jntBurn = "BURN[EngineBurn" + str(context.scene.engine_small) + "]"
+        jntShape = "ETSH[EngineShape" + str(context.scene.engine_small) + "]"
         
-        hardp_pos = bpy.data.objects.new(jntName_Pos, None)
-        context.scene.objects.link(hardp_pos)
+        engine_nozzle = bpy.data.objects.new(jntNozzle, None)
+        context.scene.objects.link(engine_nozzle)
         
-        hardp_head = bpy.data.objects.new(jntName_Head, None)
-        context.scene.objects.link(hardp_head)
+        engine_burn = bpy.data.objects.new(jntBurn, None)
+        context.scene.objects.link(engine_burn)
         
-        hardp_left = bpy.data.objects.new(jntName_Left, None)
-        context.scene.objects.link(hardp_left)
-        
-        hardp_up = bpy.data.objects.new(jntName_Up, None)
-        context.scene.objects.link(hardp_up)
+        if self.useSelected:
+            bpy.context.selected_objects[0].name = jntShape
+        else:
+            verts = [(0.5,-0.5,0),(0.5,0.5,0),(-0.5,-0.5,0),(-0.5,0.5,0)]
+            faces = [(2,3,1,0)]
+            engine_mesh = bpy.data.meshes.new(jntShape)
+            engine_shape = bpy.data.objects.new(jntShape,engine_mesh)
+            context.scene.objects.link(engine_shape)
+            engine_shape.parent = engine_nozzle
+            engine_mesh.from_pydata(verts,[],faces)
+            engine_mesh.update(calc_edges=True)
         
         if context.scene.parent_name:
-            hardp_pos.parent = context.scene.objects[context.scene.parent_name]
-        
-        hardp_head.parent = hardp_pos
-        hardp_left.parent = hardp_pos
-        hardp_up.parent = hardp_pos
-        
-        hardp_pos.location = bpy.context.scene.cursor_location
-        hardp_pos.rotation_euler.x = 1.57079633
-        hardp_up.location.xyz = [0,1,0]
-        hardp_head.location.xyz = [0,0,1]
-        hardp_left.location.xyz = [1,0,0]
-        
-        return {"FINISHED"}
-    
-class MakeSalvageardpoint(bpy.types.Operator):
-    bl_idname = "hmrm.make_salvage"
-    bl_label = "Add Salvage Hardpoint"
-    bl_options = {"UNDO"}
-    
-    def invoke(self, context, event):
-
-        jntName_Pos = "JNT[SalvagePoint" + str(context.scene.utility_name) + "]"
-        jntName_Head = "JNT[SalvagePoint" + str(context.scene.utility_name) + "Heading]"
-        jntName_Left = "JNT[SalvagePoint" + str(context.scene.utility_name) + "Left]"
-        jntName_Up = "JNT[SalvagePoint" + str(context.scene.utility_name) + "Up]"
-        
-        hardp_pos = bpy.data.objects.new(jntName_Pos, None)
-        context.scene.objects.link(hardp_pos)
-        
-        hardp_head = bpy.data.objects.new(jntName_Head, None)
-        context.scene.objects.link(hardp_head)
-        
-        hardp_left = bpy.data.objects.new(jntName_Left, None)
-        context.scene.objects.link(hardp_left)
-        
-        hardp_up = bpy.data.objects.new(jntName_Up, None)
-        context.scene.objects.link(hardp_up)
-        
-        if context.scene.parent_name:
-            hardp_pos.parent = context.scene.objects[context.scene.parent_name]
+            engine_nozzle.parent = context.scene.objects[context.scene.parent_name]
             
-        hardp_head.parent = hardp_pos
-        hardp_left.parent = hardp_pos
-        hardp_up.parent = hardp_pos
+        engine_burn.parent = engine_nozzle
         
-        hardp_pos.location = bpy.context.scene.cursor_location
-        hardp_pos.rotation_euler.x = 1.57079633
-        hardp_up.location.xyz = [0,1,0]
-        hardp_head.location.xyz = [0,0,1]
-        hardp_left.location.xyz = [1,0,0]
+        for f in range (0, context.scene.engine_small_flame):
+            flameDiv = "Flame[0]_Div[" + str(f) + "]"
+            flame_div = bpy.data.objects.new(flameDiv, None)
+            context.scene.objects.link(flame_div)
+            
+            flame_div.parent = engine_burn
+            flame_div.location.z = 0-f
         
+        
+        engine_nozzle.rotation_euler.x = 1.57079633
+        if self.useSelected:
+            engine_nozzle.location = bpy.context.selected_objects[0].location
+            bpy.context.selected_objects[0].parent = engine_nozzle
+            bpy.context.selected_objects[0].location.xyz = [0,0,0]
+        else:
+            engine_nozzle.location = bpy.context.scene.cursor_location
+    
         return {"FINISHED"}
+
 
 def menu_func(self, context):
     self.layout.operator(ExportDAE.bl_idname, text="Better Collada - HW (.dae)")
