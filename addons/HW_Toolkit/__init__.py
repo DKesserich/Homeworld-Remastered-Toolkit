@@ -158,6 +158,15 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
         """
 
     def execute(self, context):
+        
+        obs = bpy.data.objects
+        for ob in obs:
+            if "ROOT" in ob.name:
+                ob.select = True
+                bpy.ops.object.select_pattern(pattern="ROOT")
+                bpy.ops.transform.rotate(value=(-90.0*2*math.pi/360.0), constraint_axis=(True, False, False))
+                bpy.ops.object.transform_apply(location=False, rotation =True, scale=False)
+
         if not self.filepath:
             raise Exception("filepath not set")
 
