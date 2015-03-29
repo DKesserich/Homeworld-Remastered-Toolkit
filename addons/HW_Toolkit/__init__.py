@@ -301,28 +301,34 @@ class MakeShipLOD(bpy.types.Operator):
         jntName_uv = "UVSets[1]"
         jntName_LOD = "ROOT_LOD[" + str(context.scene.lod_num) + "]"
         jntName = "JNT[" + context.scene.ship_name + "]"
-        
-        class_jnt = bpy.data.objects.new(jntName_class, None)
-        context.scene.objects.link(class_jnt)
-        uv_joint = bpy.data.objects.new(jntName_uv, None)
-        context.scene.objects.link(uv_joint)
-        info_jnt = bpy.data.objects.new(jntName_info, None)
-        context.scene.objects.link(info_jnt)
+
+        if context.scene.lod_num == 0:
+            info_jnt = bpy.data.objects.new(jntName_info, None)
+            context.scene.objects.link(info_jnt)
+            class_jnt = bpy.data.objects.new(jntName_class, None)
+            context.scene.objects.link(class_jnt)
+            uv_joint = bpy.data.objects.new(jntName_uv, None)
+            context.scene.objects.link(uv_joint)
+            ship_jnt = bpy.data.objects.new(jntName, None)
+            context.scene.objects.link(ship_jnt)
         
         LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
         context.scene.objects.link(LOD_jnt)
         
-        ship_jnt = bpy.data.objects.new(jntName, None)
-        context.scene.objects.link(ship_jnt)
+        if context.scene.lod_num == 0:
+            class_jnt.parent = info_jnt
+            uv_joint.parent = info_jnt
+            ship_jnt.parent = LOD_jnt
+            bpy.context.selected_objects[0].location.xyz = (0,0,0)
         
-        class_jnt.parent = info_jnt
-        uv_joint.parent = info_jnt
-        ship_jnt.parent = LOD_jnt
         
-        bpy.context.selected_objects[0].location.xyz = (0,0,0)
-        bpy.context.selected_objects[0].name = "MULT[" + context.scene.ship_name + "]"
-        bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.ship_name + "]"
-        bpy.context.selected_objects[0].parent = ship_jnt
+        bpy.context.selected_objects[0].name = "MULT[" + context.scene.ship_name + "]_LOD[" + str(context.scene.lod_num) + "]"
+        bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.ship_name + "]_LOD[" + str(context.scene.lod_num) + "]"
+
+        if context.scene.lod_num == 0:
+            bpy.context.selected_objects[0].parent = ship_jnt
+        else:
+            bpy.context.selected_objects[0].parent = LOD_jnt
 
         
         return {"FINISHED"}
