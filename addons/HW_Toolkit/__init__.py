@@ -335,10 +335,10 @@ class MakeWeaponHardpoint(bpy.types.Operator):
  
     def invoke(self, context, event):
         
-        tempName = context.scene.hardpoint_name
+         
         
-        if context.scene.hardpoint_num > 0:
-            tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
+        
+        tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
             
         jntName_Pos = "JNT[Weapon_" + tempName + "_Position]"
         jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
