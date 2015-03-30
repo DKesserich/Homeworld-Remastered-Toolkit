@@ -269,7 +269,7 @@ class HMRMPanelEngines(bpy.types.Panel):
     bpy.types.Scene.engine_small_flame = IntProperty(
         name = "Flame Div",
         min = 1,
-        default = 1
+        default = 5
         )   
     
     def draw(self, context):
@@ -340,9 +340,6 @@ class MakeWeaponHardpoint(bpy.types.Operator):
     makeTurret = bpy.props.BoolProperty()
  
     def invoke(self, context, event):
-        
-         
-        
         
         tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
             
