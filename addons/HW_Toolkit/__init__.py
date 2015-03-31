@@ -190,6 +190,38 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
 
 class HMRMPanel(bpy.types.Panel):
     """Creates a Panel in the Create window"""
+    bl_label = "HMRM: Ships"
+    bl_idname = "HMRM_TOOLS_SHIP"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'TOOLS'
+    bl_context = "objectmode"
+    bl_category = "Create"
+    
+    bpy.types.Scene.ship_name = StringProperty(
+        name = "Name",
+        default = "Default")
+    bpy.types.Scene.lod_num = IntProperty(
+        name = "LOD",
+        min = 0,
+        max = 3,
+        default = 0)
+    bpy.types.Scene.flag_uv = BoolProperty(
+        name = "Has Badge")
+    
+    def draw(self, context):
+        layout = self.layout
+        scn = context.scene
+                
+        layout.label("Ship")
+        layout.prop(scn,'flag_uv')
+        layout.prop(scn, 'ship_name')
+        layout.prop(scn,'lod_num')
+
+        layout.operator("hmrm.make_ship", "Convert to Ship")
+        layout.operator("hmrm.make_col", "Copy to Collision")
+
+class HMRMPanel(bpy.types.Panel):
+    """Creates a Panel in the Create window"""
     bl_label = "HMRM: Hardpoints"
     bl_idname = "HMRM_TOOLS"
     bl_space_type = 'VIEW_3D'
@@ -197,46 +229,44 @@ class HMRMPanel(bpy.types.Panel):
     bl_context = "objectmode"
     bl_category = "Create"
     
+    
     bpy.types.Scene.hardpoint_name = StringProperty(
         name = "Name",
         default = "Default")
-
     bpy.types.Scene.hardpoint_num = IntProperty(
         name = "Number",
         min = 0)
+    bpy.types.Scene.weapon_mesh_name = StringProperty(
+        name = "Name",
+        default = "Default")
+        
         
     bpy.types.Scene.utility_name = IntProperty(
         name = "Hardpoint",
         min = 0)
+                
         
-    bpy.types.Scene.ship_name = StringProperty(
-        name = "Name",
-        default = "Default")
-        
-    bpy.types.Scene.lod_num = IntProperty(
-        name = "LOD",
-        min = 0,
-        max = 3,
-        default = 0
-        )
+    bpy.types.Scene.parent_ship = StringProperty(
+        name = "Ship JNT")
+    
     
     def draw(self, context):
         layout = self.layout
         scn = context.scene
-                
-        layout.label("Ship")
-        layout.prop(scn, 'ship_name')
-        layout.prop(scn,'lod_num')
-        layout.operator("hmrm.make_ship", "Convert to Ship")
-        layout.operator("hmrm.make_col", "Copy to Collision")
-        
-        layout.separator()
         
         layout.label("Weapons")
         layout.prop(scn, 'hardpoint_name')
         layout.prop(scn,'hardpoint_num')
-        layout.operator("hmrm.make_weapon", "Weapon").makeTurret = False
-        layout.operator("hmrm.make_weapon", "Turret").makeTurret = True
+        layout.operator("hmrm.make_weapon", "Weapon").createOptions = "Gun"
+        layout.operator("hmrm.make_weapon", "Turret").createOptions = "Turret"
+        
+        layout.separator()
+        
+        layout.label("Weapon Mesh")
+        layout.prop_search(scn, "parent_ship", scn, "objects")
+        layout.prop(scn, 'weapon_mesh_name')
+        layout.prop(scn,'hardpoint_num')
+        layout.operator("hmrm.make_weapon", "Mesh to Weapon").createOptions = "Mesh"
         
         layout.separator()
         
@@ -293,9 +323,13 @@ class MakeShipLOD(bpy.types.Operator):
         if bpy.context.active_object:
             jntName_info = "ROOT_INFO"
             jntName_class = "Class[MultiMesh]_Version[512]"
-            jntName_uv = "UVSets[1]"
             jntName_LOD = "ROOT_LOD[" + str(context.scene.lod_num) + "]"
             jntName = "JNT[" + context.scene.ship_name + "]"
+            
+            if context.scene.flag_uv:
+                jntName_uv = "UVSets[2]"
+            else:
+                jntName_uv = "UVSets[1]"
 
             if context.scene.lod_num == 0:
                 info_jnt = bpy.data.objects.new(jntName_info, None)
@@ -366,7 +400,7 @@ class MakeWeaponHardpoint(bpy.types.Operator):
     bl_idname = "hmrm.make_weapon"
     bl_label = "Add Weapon Hardpoint"
     bl_options = {"UNDO"}
-    makeTurret = bpy.props.BoolProperty()
+    createOptions = bpy.props.StringProperty()
     hasRoot = bpy.props.BoolProperty()
  
     def invoke(self, context, event):
@@ -376,6 +410,11 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             if "ROOT_LOD[0]" in ob.name:
                 self.hasRoot = True
                 
+        if self.createOptions == "Mesh":
+            if "JNT" not in context.scene.parent_ship:
+                self.report({'ERROR'}, "No parent found. Please select your ship JNT[****]")
+                return {"FINISHED"}
+                
         if self.hasRoot:
             tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
                 
@@ -383,10 +422,14 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
             jntName_Dir = "JNT[Weapon_" + tempName + "_Direction]"
             jntName_Muz = "JNT[Weapon_" + tempName +"_Muzzle]"
-            if self.makeTurret:
+            if self.createOptions == "Turret":
                 jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
                 weapon_lat = bpy.data.objects.new(jntName_Lat, None)
                 context.scene.objects.link(weapon_lat)
+            if self.createOptions == "Mesh":
+                jntName_Mesh = "JNT["+ context.scene.weapon_mesh_name +"."+str(context.scene.hardpoint_num)+"]"
+                weapon_mesh = bpy.data.objects.new(jntName_Mesh, None)
+                context.scene.objects.link(weapon_mesh)
             
             weapon_pos = bpy.data.objects.new(jntName_Pos, None)
             context.scene.objects.link(weapon_pos)
@@ -404,8 +447,15 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             weapon_dir.parent = weapon_pos
             weapon_rest.parent = weapon_pos
             weapon_muzzle.parent = weapon_pos
-            if self.makeTurret:
+            
+            if self.createOptions == "Turret":
                 weapon_lat.parent = weapon_pos
+            if self.createOptions == "Mesh":
+                bpy.context.selected_objects[0].name = "MULT[" + context.scene.weapon_mesh_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
+                bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.weapon_mesh_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
+                bpy.context.selected_objects[0].parent = weapon_pos
+                bpy.context.selected_objects[0].location = [0,0,0]
+                weapon_mesh.parent = weapon_pos
             
             #Following standard Blender workflow, create the object at the 3D Cursor location
             #Also, since the Direction and Rest joints are in local space for Postion,
@@ -417,6 +467,10 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             weapon_dir.location.xyz = [0,1,0]
             weapon_rest.location.xyz = [0,0,1]
             weapon_muzzle.location.xyz = [0,0,-0.25]
+            
+            if self.createOptions == "Mesh":
+                weapon_mesh.parent = context.scene.objects[context.scene.parent_ship]
+                
         else:
             self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
             
