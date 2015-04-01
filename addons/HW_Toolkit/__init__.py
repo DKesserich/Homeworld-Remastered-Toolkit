@@ -422,14 +422,20 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
             jntName_Dir = "JNT[Weapon_" + tempName + "_Direction]"
             jntName_Muz = "JNT[Weapon_" + tempName +"_Muzzle]"
+            
             if self.createOptions == "Turret":
                 jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
                 weapon_lat = bpy.data.objects.new(jntName_Lat, None)
                 context.scene.objects.link(weapon_lat)
+                
             if self.createOptions == "Mesh":
                 jntName_Mesh = "JNT["+ context.scene.weapon_mesh_name +"."+str(context.scene.hardpoint_num)+"]"
                 weapon_mesh = bpy.data.objects.new(jntName_Mesh, None)
                 context.scene.objects.link(weapon_mesh)
+                
+                jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
+                weapon_lat = bpy.data.objects.new(jntName_Lat, None)
+                context.scene.objects.link(weapon_lat)
             
             weapon_pos = bpy.data.objects.new(jntName_Pos, None)
             context.scene.objects.link(weapon_pos)
@@ -446,30 +452,39 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             weapon_pos.parent = context.scene.objects["ROOT_LOD[0]"]
             weapon_dir.parent = weapon_pos
             weapon_rest.parent = weapon_pos
-            weapon_muzzle.parent = weapon_pos
+            
+            if self.createOptions == "Mesh":
+                weapon_muzzle.parent = weapon_lat
+            else:
+                weapon_muzzle.parent = weapon_pos
             
             if self.createOptions == "Turret":
                 weapon_lat.parent = weapon_pos
             if self.createOptions == "Mesh":
                 bpy.context.selected_objects[0].name = "MULT[" + context.scene.weapon_mesh_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
                 bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.weapon_mesh_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
-                bpy.context.selected_objects[0].parent = weapon_pos
-                bpy.context.selected_objects[0].location = [0,0,0]
-                weapon_mesh.parent = weapon_pos
+                weapon_lat.parent = weapon_pos
+                weapon_mesh.parent = context.scene.objects[context.scene.parent_ship]
             
             #Following standard Blender workflow, create the object at the 3D Cursor location
             #Also, since the Direction and Rest joints are in local space for Postion,
             #and HODOR expects Y-Up, offset Y for Dir and Z for rest.
             #Rotate Pos 90 degrees on X to align with Blender world space.
             
-            weapon_pos.location = bpy.context.scene.cursor_location
+            if self.createOptions == "Mesh":
+                weapon_mesh.location = bpy.context.scene.cursor_location
+                weapon_pos.location = bpy.context.selected_objects[0].location
+            else:
+                weapon_pos.location = bpy.context.scene.cursor_location
             weapon_pos.rotation_euler.x = 1.57079633
             weapon_dir.location.xyz = [0,1,0]
             weapon_rest.location.xyz = [0,0,1]
             weapon_muzzle.location.xyz = [0,0,-0.25]
             
             if self.createOptions == "Mesh":
-                weapon_mesh.parent = context.scene.objects[context.scene.parent_ship]
+                bpy.context.selected_objects[0].parent = weapon_pos
+                bpy.context.selected_objects[0].location = [0,0,0]
+                bpy.context.selected_objects[0].rotation_euler.x = -1.57079633
                 
         else:
             self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
