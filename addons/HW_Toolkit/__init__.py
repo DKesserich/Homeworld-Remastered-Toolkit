@@ -311,7 +311,35 @@ class HMRMPanelEngines(bpy.types.Panel):
         layout.prop(scn,'engine_small_flame')
         layout.operator("hmrm.make_engine_small","Add").useSelected = False
         layout.operator("hmrm.make_engine_small","Convert Selection").useSelected = True
-    
+
+#Navlight Panel
+class HMRMPanelNavLights(bpy.types.Panel):
+	"""Creates a Panel in the Create Window"""
+	bl_label = "HMRM: Navlights"
+	bl_idName = "HMRM_TOOLS_NAVLIGHTS"
+	bl_space_type = 'VIEW_3D'
+	bl_region_type = 'TOOLS'
+	bl_context = "objectmode"
+	bl_category = "Create"
+	
+	bpy.types.Scene.navLightName = StringProperty(
+		name = "Name",
+		default = "Default")
+
+	def draw(self, context):
+		layout = self.layout
+		scn = context.scene
+
+		layout.label("Navlight Name")
+		layout.prop(scn,'navLightName')
+		layout.operator("hmrm.convert_navlight","Default").createOption = "default"
+		layout.operator("hmrm.convert_navlight","Bay (No Flicker)").createOption = "nav_baynf"
+		layout.operator("hmrm.convert_navlight","Bay").createOption = "nav_bays"
+		layout.operator("hmrm.convert_navlight","Bridge").createOption = "nav_bridge"
+		layout.operator("hmrm.convert_navlight","Missile").createOption = "nav_missile"
+		layout.operator("hmrm.convert_navlight","Scaffold").createOption = "nav_scaffold"
+		layout.operator("hmrm.convert_navlight","Thruster").createOption = "nav_thrust"
+		 
         
 class MakeShipLOD(bpy.types.Operator):
     bl_idname = "hmrm.make_ship"
@@ -599,6 +627,28 @@ class MakeEngineSmall(bpy.types.Operator):
             self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
         
         return {"FINISHED"}
+
+
+class ConvertToNavlight(bpy.types.Operator):
+	bl_idname = "hmrm.convert_navlight"
+	bl_label = "Convert Lamp to Navlight"
+	bl_options = {"UNDO"}
+	createOption = bpy.props.StringProperty()
+
+
+	def invoke(self,context,event):
+		if bpy.context.active_object.type == "LAMP":
+			navLight = bpy.context.active_object
+
+			navLight.name = 'NAVL['+context.scene.navLightName+']'
+			navLight.data["Type"] = self.createOption
+			navLight.data["Phase"] = 0.0
+			navLight.data["Freq"] = 0.0
+			navLight.data["Flags"] = "None"
+
+			navLight.parent = bpy.data.objects['ROOT_LOD[0]']
+
+		return {"FINISHED"}
 
 
 def menu_func(self, context):
