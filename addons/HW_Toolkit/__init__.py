@@ -188,7 +188,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
         from . import export_dae
         return export_dae.save(self, context, **keywords)
 
-class HMRMPanel(bpy.types.Panel):
+class HMRMPanelShip(bpy.types.Panel):
     """Creates a Panel in the Create window"""
     bl_label = "HMRM: Ships"
     bl_idname = "HMRM_TOOLS_SHIP"
@@ -220,7 +220,7 @@ class HMRMPanel(bpy.types.Panel):
         layout.operator("hmrm.make_ship", "Convert to Ship")
         layout.operator("hmrm.make_col", "Copy to Collision")
 
-class HMRMPanel(bpy.types.Panel):
+class HMRMPanelTools(bpy.types.Panel):
     """Creates a Panel in the Create window"""
     bl_label = "HMRM: Hardpoints"
     bl_idname = "HMRM_TOOLS"
@@ -634,21 +634,30 @@ class ConvertToNavlight(bpy.types.Operator):
 	bl_label = "Convert Lamp to Navlight"
 	bl_options = {"UNDO"}
 	createOption = bpy.props.StringProperty()
-
+	hasRoot = bpy.props.BoolProperty()
 
 	def invoke(self,context,event):
-		if bpy.context.active_object.type == "LAMP":
-			navLight = bpy.context.active_object
+        
+            obs = bpy.data.objects
+            for ob in obs:
+                if "ROOT_LOD[0]" in ob.name:
+                    self.hasRoot = True
+                
+            if self.hasRoot:
+                if bpy.context.active_object.type == "LAMP":
+                    navLight = bpy.context.active_object
 
-			navLight.name = 'NAVL['+context.scene.navLightName+']'
-			navLight.data["Type"] = self.createOption
-			navLight.data["Phase"] = 0.0
-			navLight.data["Freq"] = 0.0
-			navLight.data["Flags"] = "None"
+                    navLight.name = 'NAVL['+context.scene.navLightName+']'
+                    navLight.data["Type"] = self.createOption
+                    navLight.data["Phase"] = 0.0
+                    navLight.data["Freq"] = 0.0
+                    navLight.data["Flags"] = "None"
 
-			navLight.parent = bpy.data.objects['ROOT_LOD[0]']
-
-		return {"FINISHED"}
+                    navLight.parent = bpy.data.objects['ROOT_LOD[0]']
+            else:
+                self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
+            
+            return {"FINISHED"}
 
 
 def menu_func(self, context):
