@@ -1223,7 +1223,26 @@ class DaeExporter:
 			return
 		bpy.context.scene.objects.active = node
 
-		self.writel(S_NODES,il,'<node name="'+self.validate_id(node.name)+'" id="'+node.name+'" sid="'+node.name+'E">')
+		#Parse Lamp data and custom properties into a Navlight node. - DL
+		if (node.type=="LAMP"):
+			lamp = node.data
+			lampColorR = str(lamp.color.r)
+			lampColorG = str(lamp.color.g)
+			lampColorB = str(lamp.color.b)
+			lampSize = str(lamp.energy)
+			lampDist = str(lamp.distance)
+			lampPhase = str(lamp["Phase"])
+			lampFreq = str(lamp["Freq"])
+			lampType = lamp["Type"]
+					  
+			nodeName = node.name+'_Type['+lampType+']_Sz['+lampSize+']_Ph['+lampPhase+']_Fr['+lampFreq+']_Col['+lampColorR+','+lampColorG+','+lampColorB+']_Dist['+lampDist+']'
+			if hasattr(lamp,'["Flags"]'):
+				lampFlags = lamp["Flags"]	
+				nodeName = nodeName+'_Flags['+lampFlags+']'
+		else:
+			nodeName = node.name
+
+		self.writel(S_NODES,il,'<node name="'+nodeName+'" id="'+nodeName+'" sid="'+nodeName+'">')
 		il+=1
 
 		#self.writel(S_NODES,il,'<matrix sid="transform">'+strmtx(node.matrix_local)+'</matrix>')
@@ -1242,8 +1261,8 @@ class DaeExporter:
 			self.export_armature_node(node,il)
 		elif (node.type=="CAMERA"):
 			self.export_camera_node(node,il)
-		elif (node.type=="LAMP"):
-			self.export_lamp_node(node,il)
+		#elif (node.type=="LAMP"):
+		#	self.export_lamp_node(node,il)
 
 		for x in node.children:
 			self.export_node(x,il)
