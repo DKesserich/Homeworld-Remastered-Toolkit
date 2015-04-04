@@ -1337,71 +1337,307 @@ class DaeExporter:
 		#Following the formatting of the 3DS Max DAE output, the animation id should be the Parent object name with -anim suffix - DL
 		#anim_id=self.new_id("anim")
 		anim_id=target
-		self.writel(S_ANIM,1,'<animation id="'+anim_id+'-anim" name="'+anim_id+'">')
+		self.writel(S_ANIM,1,'<animation id="'+anim_id+'-anim" name="'+anim_id+'"></animation>')
 		source_frames = ""
-		source_transforms = ""
+		source_Xtransforms = ""
+		source_Ytransforms = ""
+		source_Ztransforms = ""
+		source_Xrotations = ""
+		source_Yrotations = ""
+		source_Zrotations = ""
 		source_interps = ""
 
 		for k in keys:
 			source_frames += " "+str(k[0])
 			if (matrices):
-				source_transforms += " "+strmtx(k[1])
+				#source_transforms += " "+strmtx(k[1])
+				source_Xtransforms += " "+str(k[1].to_translation()[0])
+				source_Ytransforms += " "+str(k[1].to_translation()[1])
+				source_Ztransforms += " "+str(k[1].to_translation()[2])
+				source_Xrotations += " "+str(math.degrees(k[1].to_euler()[0]))
+				source_Yrotations += " "+str(math.degrees(k[1].to_euler()[1]))
+				source_Zrotations += " "+str(math.degrees(k[1].to_euler()[2]))
 			else:
 				source_transforms += " "+str(k[1])
 
 			source_interps +=" LINEAR"
 
-
+		#X Transform
 		# Time Source
-		self.writel(S_ANIM,2,'<source id="'+anim_id+'-input">')
-		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-input-array" count="'+str(frame_total)+'">'+source_frames+'</float_array>')
+		self.writel(S_ANIM,1,'<animation>')
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.X-input">')
+		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-translate.X-input-array" count="'+str(frame_total)+'">'+source_frames+'</float_array>')
 		self.writel(S_ANIM,3,'<technique_common>')
-		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-input-array" count="'+str(frame_total)+'" stride="1">')
-		self.writel(S_ANIM,5,'<param name="TIME" type="float"/>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.X-input-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="float"></param>')
 		self.writel(S_ANIM,4,'</accessor>')
 		self.writel(S_ANIM,3,'</technique_common>')
 		self.writel(S_ANIM,2,'</source>')
 
 		if (matrices):
 			# Transform Source
-			self.writel(S_ANIM,2,'<source id="'+anim_id+'-transform-output">')
-			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-transform-output-array" count="'+str(frame_total*16)+'">'+source_transforms+'</float_array>')
+			self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.X-output">')
+			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-translate.X-output-array" count="'+str(frame_total)+'">'+source_Xtransforms+'</float_array>')
 			self.writel(S_ANIM,3,'<technique_common>')
-			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-transform-output-array" count="'+str(frame_total)+'" stride="16">')
-			self.writel(S_ANIM,5,'<param name="TRANSFORM" type="float4x4"/>')
+			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.X-output-array" count="'+str(frame_total)+'" stride="1">')
+			self.writel(S_ANIM,5,'<param type="float"></param>')
 			self.writel(S_ANIM,4,'</accessor>')
 			self.writel(S_ANIM,3,'</technique_common>')
 			self.writel(S_ANIM,2,'</source>')
-		else:
-			# Value Source
-			self.writel(S_ANIM,2,'<source id="'+anim_id+'-transform-output">')
-			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-transform-output-array" count="'+str(frame_total)+'">'+source_transforms+'</float_array>')
-			self.writel(S_ANIM,3,'<technique_common>')
-			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-transform-output-array" count="'+str(frame_total)+'" stride="1">')
-			self.writel(S_ANIM,5,'<param name="X" type="float"/>')
-			self.writel(S_ANIM,4,'</accessor>')
-			self.writel(S_ANIM,3,'</technique_common>')
-			self.writel(S_ANIM,2,'</source>')
+		
 
 		# Interpolation Source
-		self.writel(S_ANIM,2,'<source id="'+anim_id+'-interpolation-output">')
-		self.writel(S_ANIM,3,'<Name_array id="'+anim_id+'-interpolation-output-array" count="'+str(frame_total)+'">'+source_interps+'</Name_array>')
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.X-interpolation">')
+		self.writel(S_ANIM,3,'<Name_array id="'+anim_id+'-translate.X-interpolation-array" count="'+str(frame_total)+'">'+source_interps+'</Name_array>')
 		self.writel(S_ANIM,3,'<technique_common>')
-		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-interpolation-output-array" count="'+str(frame_total)+'" stride="1">')
-		self.writel(S_ANIM,5,'<param name="INTERPOLATION" type="Name"/>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.X-interpolation-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="name"/>')
 		self.writel(S_ANIM,4,'</accessor>')
 		self.writel(S_ANIM,3,'</technique_common>')
 		self.writel(S_ANIM,2,'</source>')
 
-		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-sampler">')
-		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-input"/>')
-		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-transform-output"/>')
-		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'-interpolation-output"/>')
+		#In Tangent - For Bezier Interpolation - Not Supported - DL
+
+		#Out Tangent - For Bezier Inerpolation - Not Supported - DL
+
+		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.X">')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'translate.X-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.X-output"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.X-interpolation"/>')
 		self.writel(S_ANIM,2,'</sampler>')
 		if (matrices):
-			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-sampler" target="'+target+'/transform"/>')
-		else:
-			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-sampler" target="'+target+'"/>')
+			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-translate.X" target="'+target+'/translate.X"></channel>')
+		self.writel(S_ANIM,1,'</animation>')
+
+		#Y Transform
+		# Time Source
+		self.writel(S_ANIM,1,'<animation>')
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.Y-input">')
+		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-translate.Y-input-array" count="'+str(frame_total)+'">'+source_frames+'</float_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.Y-input-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="float"></param>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		if (matrices):
+			# Transform Source
+			self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.Y-output">')
+			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-translate.Y-output-array" count="'+str(frame_total)+'">'+source_Ytransforms+'</float_array>')
+			self.writel(S_ANIM,3,'<technique_common>')
+			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.Y-output-array" count="'+str(frame_total)+'" stride="1">')
+			self.writel(S_ANIM,5,'<param type="float"></param>')
+			self.writel(S_ANIM,4,'</accessor>')
+			self.writel(S_ANIM,3,'</technique_common>')
+			self.writel(S_ANIM,2,'</source>')
+		
+		# Interpolation Source
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.Y-interpolation">')
+		self.writel(S_ANIM,3,'<Name_array id="'+anim_id+'-translate.Y-interpolation-array" count="'+str(frame_total)+'">'+source_interps+'</Name_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.Y-interpolation-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="name"/>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		#In Tangent - For Bezier Interpolation - Not Supported - DL
+
+		#Out Tangent - For Bezier Inerpolation - Not Supported - DL
+
+		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.Y">')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'translate.Y-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.Y-output"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.Y-interpolation"/>')
+		self.writel(S_ANIM,2,'</sampler>')
+		if (matrices):
+			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-translate.Y" target="'+target+'/translate.Y"></channel>')
+		self.writel(S_ANIM,1,'</animation>')
+
+		#Z Transform
+		# Time Source
+		self.writel(S_ANIM,1,'<animation>')
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.Z-input">')
+		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-translate.Z-input-array" count="'+str(frame_total)+'">'+source_frames+'</float_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.Z-input-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="float"></param>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		if (matrices):
+			# Transform Source
+			self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.Z-output">')
+			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-translate.Z-output-array" count="'+str(frame_total)+'">'+source_Ztransforms+'</float_array>')
+			self.writel(S_ANIM,3,'<technique_common>')
+			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.Z-output-array" count="'+str(frame_total)+'" stride="1">')
+			self.writel(S_ANIM,5,'<param type="float"></param>')
+			self.writel(S_ANIM,4,'</accessor>')
+			self.writel(S_ANIM,3,'</technique_common>')
+			self.writel(S_ANIM,2,'</source>')
+		
+		# Interpolation Source
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-translate.Z-interpolation">')
+		self.writel(S_ANIM,3,'<Name_array id="'+anim_id+'-translate.Z-interpolation-array" count="'+str(frame_total)+'">'+source_interps+'</Name_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-translate.Z-interpolation-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="name"/>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		#In Tangent - For Bezier Interpolation - Not Supported - DL
+
+		#Out Tangent - For Bezier Inerpolation - Not Supported - DL
+
+		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.Z">')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'translate.Z-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.Z-output"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.Z-interpolation"/>')
+		self.writel(S_ANIM,2,'</sampler>')
+		if (matrices):
+			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-translate.Z" target="'+target+'/translate.Z"></channel>')
+		
+		self.writel(S_ANIM,1,'</animation>')
+
+		#X Rotation
+		# Time Source
+		self.writel(S_ANIM,1,'<animation>')
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateX.ANGLE-input">')
+		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-rotateX.ANGLE-input-array" count="'+str(frame_total)+'">'+source_frames+'</float_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateX.ANGLE-input-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="float"></param>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		if (matrices):
+			# Transform Source
+			self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateX.ANGLE-output">')
+			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-rotateX.ANGLE-output-array" count="'+str(frame_total)+'">'+source_Xrotations+'</float_array>')
+			self.writel(S_ANIM,3,'<technique_common>')
+			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateX.ANGLE-output-array" count="'+str(frame_total)+'" stride="1">')
+			self.writel(S_ANIM,5,'<param type="float"></param>')
+			self.writel(S_ANIM,4,'</accessor>')
+			self.writel(S_ANIM,3,'</technique_common>')
+			self.writel(S_ANIM,2,'</source>')
+		
+		# Interpolation Source
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateX.ANGLE-interpolation">')
+		self.writel(S_ANIM,3,'<Name_array id="'+anim_id+'-rotateX.ANGLE-interpolation-array" count="'+str(frame_total)+'">'+source_interps+'</Name_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateX.ANGLE-interpolation-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="name"/>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		#In Tangent - For Bezier Interpolation - Not Supported - DL
+
+		#Out Tangent - For Bezier Inerpolation - Not Supported - DL
+
+		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-rotateX.ANGLE">')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-rotateX.ANGLE-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-rotateX.ANGLE-output"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'-rotateX.ANGLE-interpolation"/>')
+		self.writel(S_ANIM,2,'</sampler>')
+		if (matrices):
+			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-rotateX.ANGLE" target="'+target+'/rotateX.ANGLE"></channel>')
+		self.writel(S_ANIM,1,'</animation>')
+
+		#Y Rotation
+		# Time Source
+		self.writel(S_ANIM,1,'<animation>')
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateY.ANGLE-input">')
+		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-rotateY.ANGLE-input-array" count="'+str(frame_total)+'">'+source_frames+'</float_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateY.ANGLE-input-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="float"></param>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		if (matrices):
+			# Transform Source
+			self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateY.ANGLE-output">')
+			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-rotateY.ANGLE-output-array" count="'+str(frame_total)+'">'+source_Yrotations+'</float_array>')
+			self.writel(S_ANIM,3,'<technique_common>')
+			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateY.ANGLE-output-array" count="'+str(frame_total)+'" stride="1">')
+			self.writel(S_ANIM,5,'<param type="float"></param>')
+			self.writel(S_ANIM,4,'</accessor>')
+			self.writel(S_ANIM,3,'</technique_common>')
+			self.writel(S_ANIM,2,'</source>')
+		
+		# Interpolation Source
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateY.ANGLE-interpolation">')
+		self.writel(S_ANIM,3,'<Name_array id="'+anim_id+'-rotateY.ANGLE-interpolation-array" count="'+str(frame_total)+'">'+source_interps+'</Name_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateY.ANGLE-interpolation-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="name"/>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		#In Tangent - For Bezier Interpolation - Not Supported - DL
+
+		#Out Tangent - For Bezier Interpolation - Not Supported - DL
+
+		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-rotateY.ANGLE">')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-rotateY.ANGLE-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-rotateY.ANGLE-output"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'-rotateY.ANGLE-interpolation"/>')
+		self.writel(S_ANIM,2,'</sampler>')
+		if (matrices):
+			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-rotateY.ANGLE" target="'+target+'/rotateY.ANGLE"></channel>')
+		self.writel(S_ANIM,1,'</animation>')
+
+		#Z Rotation
+		# Time Source
+		self.writel(S_ANIM,1,'<animation>')
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateZ.ANGLE-input">')
+		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-rotateZ.ANGLE-input-array" count="'+str(frame_total)+'">'+source_frames+'</float_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateZ.ANGLE-input-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="float"></param>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		if (matrices):
+			# Transform Source
+			self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateZ.ANGLE-output">')
+			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-rotateZ.ANGLE-output-array" count="'+str(frame_total)+'">'+source_Zrotations+'</float_array>')
+			self.writel(S_ANIM,3,'<technique_common>')
+			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateZ.ANGLE-output-array" count="'+str(frame_total)+'" stride="1">')
+			self.writel(S_ANIM,5,'<param type="float"></param>')
+			self.writel(S_ANIM,4,'</accessor>')
+			self.writel(S_ANIM,3,'</technique_common>')
+			self.writel(S_ANIM,2,'</source>')
+		
+		# Interpolation Source
+		self.writel(S_ANIM,2,'<source id="'+anim_id+'-rotateZ.ANGLE-interpolation">')
+		self.writel(S_ANIM,3,'<Name_array id="'+anim_id+'-rotateZ.ANGLE-interpolation-array" count="'+str(frame_total)+'">'+source_interps+'</Name_array>')
+		self.writel(S_ANIM,3,'<technique_common>')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-rotateZ.ANGLE-interpolation-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,5,'<param type="name"/>')
+		self.writel(S_ANIM,4,'</accessor>')
+		self.writel(S_ANIM,3,'</technique_common>')
+		self.writel(S_ANIM,2,'</source>')
+
+		#In Tangent - For Bezier Interpolation - Not Supported - DL
+
+		#Out Tangent - For Bezier Inerpolation - Not Supported - DL
+
+		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-rotateZ.ANGLE">')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-rotateZ.ANGLE-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-rotateZ.ANGLE-output"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'-rotateZ.ANGLE-interpolation"/>')
+		self.writel(S_ANIM,2,'</sampler>')
+		if (matrices):
+			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-rotateZ.ANGLE" target="'+target+'/rotateZ.ANGLE"></channel>')
 		self.writel(S_ANIM,1,'</animation>')
 
 		return [anim_id]
@@ -1467,9 +1703,9 @@ class DaeExporter:
 					if (not (name in xform_cache)):
 						xform_cache[name]=[]
 
-					mtx = node.matrix_world.copy()
-					if (node.parent):
-						mtx = node.parent.matrix_world.inverted() * mtx
+					mtx = node.matrix_local.copy()
+					#if (node.parent):
+					#	mtx = node.parent.matrix_local.inverted() * mtx
 
 					xform_cache[name].append( (key,mtx) )
 
