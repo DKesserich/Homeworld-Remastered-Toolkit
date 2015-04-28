@@ -34,7 +34,7 @@ class HMRMPanelShip(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
-    bl_category = "Create"
+    bl_category = "HW Joint Tools"
     
     bpy.types.Scene.ship_name = StringProperty(
         name = "Name",
@@ -66,7 +66,7 @@ class HMRMPanelTools(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
-    bl_category = "Create"
+    bl_category = "HW Joint Tools"
     
     
     bpy.types.Scene.hardpoint_name = StringProperty(
@@ -123,7 +123,7 @@ class HMRMPanelEngines(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
-    bl_category = "Create"   
+    bl_category = "HW Joint Tools"   
     
     bpy.types.Scene.engine_small = IntProperty(
         name = "Engine",
@@ -159,7 +159,7 @@ class HMRMPanelNavLights(bpy.types.Panel):
 	bl_space_type = 'VIEW_3D'
 	bl_region_type = 'TOOLS'
 	bl_context = "objectmode"
-	bl_category = "Create"
+	bl_category = "HW Joint Tools"
 	
 	bpy.types.Scene.navLightName = StringProperty(
 		name = "Name",
