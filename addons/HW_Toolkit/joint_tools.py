@@ -178,7 +178,89 @@ class HMRMPanelNavLights(bpy.types.Panel):
 		layout.operator("hmrm.convert_navlight","Missile").createOption = "nav_missile"
 		layout.operator("hmrm.convert_navlight","Scaffold").createOption = "nav_scaffold"
 		layout.operator("hmrm.convert_navlight","Thruster").createOption = "nav_thrust"
-		 
+
+#Docking Panel
+class HMRMPanelDockPaths(bpy.types.Panel):
+	bl_label = "HMRM: Docking Paths"
+	bl_idName = "HMRM_TOOL_DOCKPATHS"
+	bl_space_type = 'VIEW_3D'
+	bl_region_type = 'TOOLS'
+	bl_context = "objectmode"
+	bl_category = "HW Joint Tools"
+
+	bpy.types.Scene.pathName = StringProperty(
+		name = "Name",
+		default = "path1")
+
+	def draw (self, context):
+		layout = self.layout
+		scn = context.scene
+
+		layout.label("Docking Path Name")
+		layout.prop(scn,'pathName')
+		layout.operator("hmrm.make_dock_path","Make Entry Path").createOption = "entryPath"
+		layout.operator("hmrm.make_dock_path","Make Exit Path").createOption = "exitPath"
+
+class MakeDockPath(bpy.types.Operator):
+	bl_idname = "hmrm.make_dock_path"
+	bl_label = "Make Dock Path"
+	bl_options = {"UNDO"}
+	createOption = bpy.props.StringProperty()
+	hasHoldDock = bpy.props.BoolProperty()
+
+	def invoke(self, context,event):
+		if bpy.data.objects.find('HOLD_DOCK') != -1:
+			self.hasHoldDock = True
+		else:
+			self.hasHoldDock = False
+		
+
+		if self.hasHoldDock == False:
+			holdDock = bpy.data.objects.new("HOLD_DOCK",None)
+			bpy.context.scene.objects.link(holdDock)
+			holdDock.parent = bpy.data.objects['ROOT_LOD[0]']
+		else:
+			holdDock = bpy.data.objects['HOLD_DOCK']
+
+		if self.createOption == "entryPath":
+			pathRoot = bpy.data.objects.new("DOCK["+context.scene.pathName+"]",None)
+			bpy.context.scene.objects.link(pathRoot)
+			pathRoot["Fam"] = "Ship Type"
+			pathRoot["Link"] = "Linked Paths"
+			pathRoot["Flags"] = "None"
+			pathRoot["MAD"] = "Animation Index"
+			pathRoot.parent = holdDock
+
+			for x in range(0,6):
+				seg = bpy.data.objects.new("SEG["+str(x)+"]",None)
+				bpy.context.scene.objects.link(seg)
+				seg.parent = pathRoot
+				seg["Tolerance"] = 100
+				seg["Speed"] = 50
+				seg["Flags"] = "None"
+				seg.location = bpy.context.scene.cursor_location
+
+		if self.createOption == "exitPath":
+			pathRoot = bpy.data.objects.new("DOCK["+context.scene.pathName+"Ex]",None)
+			bpy.context.scene.objects.link(pathRoot)
+			pathRoot["Fam"] = "Ship Type"
+			pathRoot["Link"] = "Linked Paths"
+			pathRoot["Flags"] = "Exit"
+			pathRoot["MAD"] = "Animation Index"
+			pathRoot.parent = holdDock
+
+			for x in range(0,3):
+				seg = bpy.data.objects.new("SEG["+str(x)+"]",None)
+				bpy.context.scene.objects.link(seg)
+				seg.parent = pathRoot
+				seg["Tolerance"] = 100
+				seg["Speed"] = 50
+				seg["Flags"] = "None"
+				seg.location = bpy.context.scene.cursor_location
+
+		return {"FINISHED"}
+
+			 
         
 class MakeShipLOD(bpy.types.Operator):
     bl_idname = "hmrm.make_ship"
