@@ -1239,8 +1239,34 @@ class DaeExporter:
 			if hasattr(lamp,'["Flags"]'):
 				lampFlags = lamp["Flags"]	
 				nodeName = nodeName+'_Flags['+lampFlags+']'
+		
+		#Check if node is a Dock Path node and parse and append dock path data into node name
+		elif ("DOCK[" in node.name):
+			shipFam = node["Fam"]
+			nodeName = node.name+'_Fam['+shipFam+']'
+			if hasattr(node,'["Link"]'):
+				dockLink = node["Link"]
+				nodeName = nodeName+'_Link['+dockLink+']'
+			if hasattr(node,'["Flags"]'):
+				dockFlags = node["Flags"]
+				nodeName = nodeName+'_Flags['+dockFlags+']'
+			if hasattr(node,'["MAD"]'):
+				dockMAD = str(node["MAD"])
+				nodeName = nodeName+'_MAD['+dockMAD+']'
+		#Check if node is a dock Seg node and parse and append segue data into node name
+		elif ("SEG[" in node.name):
+			#Remove the .00x in the event this isn't the first SEG node with this index
+			nodeName = node.name[0]+node.name[1]+node.name[2]+node.name[3]+node.name[4]+node.name[5]
+			segTol = str(node["Tolerance"])
+			segSpeed = str(node["Speed"])
+			nodeName = nodeName+'_Tol['+segTol+']_Spd['+segSpeed+']'
+			if hasattr(node,'["Flags"]'):
+				nodeFlags = node["Flags"]
+				nodeName = nodeName+'_Flags['+nodeFlags+']'
 		else:
 			nodeName = node.name
+
+		
 
 		self.writel(S_NODES,il,'<node name="'+nodeName+'" id="'+nodeName+'" sid="'+nodeName+'">')
 		il+=1
