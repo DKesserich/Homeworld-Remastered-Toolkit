@@ -314,36 +314,37 @@ class MakeShipLOD(bpy.types.Operator):
         return {"FINISHED"}
     
 class MakeShipCOL(bpy.types.Operator):
-    bl_idname = "hmrm.make_col"
-    bl_label = "Create Collision"
-    bl_options = {"UNDO"}
- 
-    def invoke(self, context, event):
-        
-        if bpy.context.active_object:
-            colName = "ROOT_COL"
-            colMesh = "COL[Root]"
-
-            col_jnt = bpy.data.objects.new(colName, None)
-            context.scene.objects.link(col_jnt)
-
-            col_obj = bpy.context.selected_objects[0].copy()
-            context.scene.objects.link(col_obj)
-            bpy.ops.object.select_all(action='DESELECT')
-            col_obj.select = True
-            
-            col_obj.name = colMesh
-            col_obj.data.name = colMesh
-            col_obj.parent = col_jnt
-
-            col_jnt.location = bpy.context.scene.cursor_location
-            col_jnt.rotation_euler.x = 1.57079633
-            col_jnt.location.y = 0
-            col_jnt.location.z = 0
-        else:
-            self.report({'ERROR'}, "No object found. Please select object.")
-        
-        return {"FINISHED"}
+	bl_idname = "hmrm.make_col"
+	bl_label = "Create Collision"
+	bl_options = {"UNDO"}
+	
+	def invoke(self, context, event):
+		if bpy.context.active_object:
+			colName = "ROOT_COL"
+			colMesh = "COL[Root]"
+			
+			col_jnt = bpy.data.objects.new(colName, None)
+			context.scene.objects.link(col_jnt)
+			
+			#col_obj = bpy.context.selected_objects[0].copy()
+			#context.scene.objects.link(col_obj)
+			bpy.ops.object.duplicate()
+			col_obj = bpy.context.active_object
+			#bpy.ops.object.select_all(action='DESELECT')
+			#col_obj.select = True
+			
+			col_obj.name = colMesh
+			col_obj.data.name = colMesh
+			col_obj.parent = col_jnt
+			
+			col_jnt.location = bpy.context.scene.cursor_location
+			col_jnt.rotation_euler.x = -1.57079633
+			col_jnt.location.y = 0
+			col_jnt.location.z = 0
+		else:
+			self.report({'ERROR'}, "No object found. Please select object.")
+			
+		return {"FINISHED"}
         
 class MakeWeaponHardpoint(bpy.types.Operator):
     bl_idname = "hmrm.make_weapon"
