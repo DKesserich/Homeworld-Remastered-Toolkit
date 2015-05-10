@@ -1276,8 +1276,15 @@ class DaeExporter:
 		nodeXCoord=node.matrix_local.to_translation()[0]
 		nodeYCoord=node.matrix_local.to_translation()[1]
 		nodeZCoord=node.matrix_local.to_translation()[2]
-		#Write XYZ coordinates to the XML following the format of the 3DS Max DAE output
+		#pull XYZ rotation relative to parent object
+		nodeXrot=str(math.degrees(node.matrix_local.to_euler()[0]))
+		nodeYrot=str(math.degrees(node.matrix_local.to_euler()[1]))
+		nodeZrot=str(math.degrees(node.matrix_local.to_euler()[2]))
+		#Write XYZ coordinates and rotations to the XML following the format of the 3DS Max DAE output
 		self.writel(S_NODES,il,'<translate sid="translate">'+str(nodeXCoord)+' '+str(nodeYCoord)+' '+str(nodeZCoord)+'</translate>')
+		self.writel(S_NODES,il,'<rotate sid="rotateZ">0 0 1 '+nodeZrot+'</rotate>')
+		self.writel(S_NODES,il,'<rotate sid="rotateY">0 1 0 '+nodeYrot+'</rotate>')
+		self.writel(S_NODES,il,'<rotate sid="rotateX">1 0 0 '+nodeXrot+'</rotate>')
 		print("NODE TYPE: "+node.type+" NAME: "+node.name)
 		if (node.type=="MESH"):
 			self.export_mesh_node(node,il)
