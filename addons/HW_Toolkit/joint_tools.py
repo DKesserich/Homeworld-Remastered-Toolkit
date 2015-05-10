@@ -28,36 +28,39 @@ from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty,
 #Begin Joint Tools
 
 class HMRMPanelShip(bpy.types.Panel):
-    """Creates a Panel in the Create window"""
-    bl_label = "HMRM: Ships"
-    bl_idname = "HMRM_TOOLS_SHIP"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-    bl_context = "objectmode"
-    bl_category = "HW Joint Tools"
-    
-    bpy.types.Scene.ship_name = StringProperty(
-        name = "Name",
-        default = "Default")
-    bpy.types.Scene.lod_num = IntProperty(
-        name = "LOD",
-        min = 0,
-        max = 3,
-        default = 0)
-    bpy.types.Scene.flag_uv = BoolProperty(
-        name = "Has Badge")
-    
-    def draw(self, context):
-        layout = self.layout
-        scn = context.scene
-                
-        layout.label("Ship")
-        layout.prop(scn,'flag_uv')
-        layout.prop(scn, 'ship_name')
-        layout.prop(scn,'lod_num')
-
-        layout.operator("hmrm.make_ship", "Convert to Ship")
-        layout.operator("hmrm.make_col", "Copy to Collision")
+	"""Creates a Panel in the Create window"""
+	bl_label = "HMRM: Ships"
+	bl_idname = "HMRM_TOOLS_SHIP"
+	bl_space_type = 'VIEW_3D'
+	bl_region_type = 'TOOLS'
+	bl_context = "objectmode"
+	bl_category = "HW Joint Tools"
+	
+	bpy.types.Scene.ship_name = StringProperty(
+		name = "Name",
+		default = "Default")
+	bpy.types.Scene.lod_num = IntProperty(
+		name = "LOD",
+		min = 0,
+		max = 3,
+		default = 0)
+	bpy.types.Scene.flag_uv = BoolProperty(
+		name = "Has Badge")
+	bpy.types.Scene.flag_tags = BoolProperty(
+		name = "Do Scar")
+	
+	def draw(self, context):
+		layout = self.layout
+		scn = context.scene
+		
+		layout.label("Ship")
+		layout.prop(scn,'flag_uv')
+		layout.prop(scn,'flag_tags')
+		layout.prop(scn, 'ship_name')
+		layout.prop(scn,'lod_num')
+		
+		layout.operator("hmrm.make_ship", "Convert to Ship")
+		layout.operator("hmrm.make_col", "Copy to Collision")
 
 class HMRMPanelTools(bpy.types.Panel):
     """Creates a Panel in the Create window"""
@@ -263,55 +266,59 @@ class MakeDockPath(bpy.types.Operator):
 			 
         
 class MakeShipLOD(bpy.types.Operator):
-    bl_idname = "hmrm.make_ship"
-    bl_label = "Create Ship"
-    bl_options = {"UNDO"}
- 
-    def invoke(self, context, event):
-        
-        if bpy.context.active_object:
-            jntName_info = "ROOT_INFO"
-            jntName_class = "Class[MultiMesh]_Version[512]"
-            jntName_LOD = "ROOT_LOD[" + str(context.scene.lod_num) + "]"
-            jntName = "JNT[" + context.scene.ship_name + "]"
-            
-            if context.scene.flag_uv:
-                jntName_uv = "UVSets[2]"
-            else:
-                jntName_uv = "UVSets[1]"
-
-            if context.scene.lod_num == 0:
-                info_jnt = bpy.data.objects.new(jntName_info, None)
-                context.scene.objects.link(info_jnt)
-                class_jnt = bpy.data.objects.new(jntName_class, None)
-                context.scene.objects.link(class_jnt)
-                uv_joint = bpy.data.objects.new(jntName_uv, None)
-                context.scene.objects.link(uv_joint)
-                ship_jnt = bpy.data.objects.new(jntName, None)
-                context.scene.objects.link(ship_jnt)
-            
-            LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
-            context.scene.objects.link(LOD_jnt)
-            
-            if context.scene.lod_num == 0:
-                class_jnt.parent = info_jnt
-                uv_joint.parent = info_jnt
-                ship_jnt.parent = LOD_jnt
-                bpy.context.selected_objects[0].location.xyz = (0,0,0)
-            
-            
-            bpy.context.selected_objects[0].name = "MULT[" + context.scene.ship_name + "]_LOD[" + str(context.scene.lod_num) + "]"
-            bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.ship_name + "]_LOD[" + str(context.scene.lod_num) + "]"
-
-            if context.scene.lod_num == 0:
-                bpy.context.selected_objects[0].parent = ship_jnt
-            else:
-                bpy.context.selected_objects[0].parent = LOD_jnt
-        else:
-            self.report({'ERROR'}, "No object found. Please select object.")
-
-        
-        return {"FINISHED"}
+	bl_idname = "hmrm.make_ship"
+	bl_label = "Create Ship"
+	bl_options = {"UNDO"}
+	
+	def invoke(self, context, event):
+	
+		if bpy.context.active_object:
+			jntName_info = "ROOT_INFO"
+			jntName_class = "Class[MultiMesh]_Version[512]"
+			jntName_LOD = "ROOT_LOD[" + str(context.scene.lod_num) + "]"
+			jntName = "JNT[" + context.scene.ship_name + "]"
+			
+			if context.scene.flag_uv:
+				jntName_uv = "UVSets[2]"
+			else:
+				jntName_uv = "UVSets[1]"
+				
+			if context.scene.lod_num == 0:
+				info_jnt = bpy.data.objects.new(jntName_info, None)
+				context.scene.objects.link(info_jnt)
+				class_jnt = bpy.data.objects.new(jntName_class, None)
+				context.scene.objects.link(class_jnt)
+				uv_joint = bpy.data.objects.new(jntName_uv, None)
+				context.scene.objects.link(uv_joint)
+				ship_jnt = bpy.data.objects.new(jntName, None)
+				context.scene.objects.link(ship_jnt)
+				
+			LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
+			context.scene.objects.link(LOD_jnt)
+			
+			if context.scene.lod_num == 0:
+				class_jnt.parent = info_jnt
+				uv_joint.parent = info_jnt
+				ship_jnt.parent = LOD_jnt
+				bpy.context.selected_objects[0].location.xyz = (0,0,0)
+				
+				
+			bpy.context.selected_objects[0].name = "MULT[" + context.scene.ship_name + "]_LOD[" + str(context.scene.lod_num) + "]"
+			bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.ship_name + "]_LOD[" + str(context.scene.lod_num) + "]"
+			if context.scene.flag_tags:
+				bpy.context.selected_objects[0].name = bpy.context.selected_objects[0].name+"_TAGS[DoScar]"
+				bpy.context.selected_objects[0].data.name = bpy.context.selected_objects[0].name
+				
+			if context.scene.lod_num == 0:
+				bpy.context.selected_objects[0].parent = ship_jnt
+			else:
+				bpy.context.selected_objects[0].parent = LOD_jnt
+				
+		else:
+			self.report({'ERROR'}, "No object found. Please select object.")
+			
+			
+		return {"FINISHED"}
     
 class MakeShipCOL(bpy.types.Operator):
 	bl_idname = "hmrm.make_col"
