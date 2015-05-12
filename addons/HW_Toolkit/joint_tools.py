@@ -29,7 +29,7 @@ from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty,
 
 class HMRMPanelShip(bpy.types.Panel):
 	"""Creates a Panel in the Create window"""
-	bl_label = "HMRM: Ships"
+	bl_label = "Ships"
 	bl_idname = "HMRM_TOOLS_SHIP"
 	bl_space_type = 'VIEW_3D'
 	bl_region_type = 'TOOLS'
@@ -64,7 +64,7 @@ class HMRMPanelShip(bpy.types.Panel):
 
 class HMRMPanelTools(bpy.types.Panel):
     """Creates a Panel in the Create window"""
-    bl_label = "HMRM: Hardpoints"
+    bl_label = "Hardpoints"
     bl_idname = "HMRM_TOOLS"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
@@ -121,7 +121,7 @@ class HMRMPanelTools(bpy.types.Panel):
         
 class HMRMPanelEngines(bpy.types.Panel):
     """Creates a Panel in the Create window"""
-    bl_label = "HMRM: Engines"
+    bl_label = "Engines"
     bl_idname = "HMRM_TOOLS_ENGINES"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
@@ -157,7 +157,7 @@ class HMRMPanelEngines(bpy.types.Panel):
 #Navlight Panel
 class HMRMPanelNavLights(bpy.types.Panel):
 	"""Creates a Panel in the Create Window"""
-	bl_label = "HMRM: Navlights"
+	bl_label = "Navlights"
 	bl_idName = "HMRM_TOOLS_NAVLIGHTS"
 	bl_space_type = 'VIEW_3D'
 	bl_region_type = 'TOOLS'
@@ -184,7 +184,7 @@ class HMRMPanelNavLights(bpy.types.Panel):
 
 #Docking Panel
 class HMRMPanelDockPaths(bpy.types.Panel):
-	bl_label = "HMRM: Docking Paths"
+	bl_label = "Docking Paths"
 	bl_idName = "HMRM_TOOL_DOCKPATHS"
 	bl_space_type = 'VIEW_3D'
 	bl_region_type = 'TOOLS'
