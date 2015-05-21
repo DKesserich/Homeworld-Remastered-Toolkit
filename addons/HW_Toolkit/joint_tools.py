@@ -429,7 +429,8 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             #Rotate Pos 90 degrees on X to align with Blender world space.
             
             if self.createOptions == "Mesh":
-                weapon_mesh.location = bpy.context.scene.cursor_location
+			#when converting a mesh to a turret, create the weapon pos at the selected mesh's root
+                weapon_mesh.location = bpy.context.selected_objects[0].location
                 weapon_pos.location = bpy.context.selected_objects[0].location
             else:
                 weapon_pos.location = bpy.context.scene.cursor_location
