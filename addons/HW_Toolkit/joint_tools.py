@@ -120,39 +120,41 @@ class HMRMPanelTools(bpy.types.Panel):
         
         
 class HMRMPanelEngines(bpy.types.Panel):
-    """Creates a Panel in the Create window"""
-    bl_label = "Engines"
-    bl_idname = "HMRM_TOOLS_ENGINES"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-    bl_context = "objectmode"
-    bl_category = "HW Joint Tools"   
-    
-    bpy.types.Scene.engine_small = IntProperty(
-        name = "Engine",
-        min = 1,
-        default = 1
-        )   
-        
-    bpy.types.Scene.engine_small_flame = IntProperty(
-        name = "Flame Div",
-        min = 1,
-        default = 5
-        )   
-    
-    def draw(self, context):
-        layout = self.layout
-        scn = context.scene
-        
-        layout.label("Large")
-        
-        layout.separator()
-        
-        layout.label("Small")
-        layout.prop(scn,'engine_small')
-        layout.prop(scn,'engine_small_flame')
-        layout.operator("hmrm.make_engine_small","Add").useSelected = False
-        layout.operator("hmrm.make_engine_small","Convert Selection").useSelected = True
+	"""Creates a Panel in the Create window"""
+	bl_label = "Engines"
+	bl_idname = "HMRM_TOOLS_ENGINES"
+	bl_space_type = 'VIEW_3D'
+	bl_region_type = 'TOOLS'
+	bl_context = "objectmode"
+	bl_category = "HW Joint Tools"
+	
+	bpy.types.Scene.engine = IntProperty(
+		name = "Engine",
+		min = 1,
+		default = 1
+		)
+	
+	bpy.types.Scene.engine_small_flame = IntProperty(
+		name = "Flame Div",
+		min = 1,
+		default = 5
+		)
+	
+	def draw(self, context):
+		layout = self.layout
+		scn = context.scene
+
+		layout.prop(scn,'engine')
+		
+		layout.label("Large")
+		layout.operator("hmrm.make_engine_large","Convert Selection")
+		layout.separator()
+		
+		layout.label("Small")		
+		layout.prop(scn,'engine_small_flame')
+		layout.operator("hmrm.make_engine_small","Add").useSelected = False
+		layout.operator("hmrm.make_engine_small","Convert Selection").useSelected = True
+
 
 #Navlight Panel
 class HMRMPanelNavLights(bpy.types.Panel):
@@ -203,6 +205,39 @@ class HMRMPanelDockPaths(bpy.types.Panel):
 		layout.prop(scn,'pathName')
 		layout.operator("hmrm.make_dock_path","Make Entry Path").createOption = "entryPath"
 		layout.operator("hmrm.make_dock_path","Make Exit Path").createOption = "exitPath"
+
+
+class MakeLargeEngine(bpy.types.Operator):
+	bl_idname = "hmrm.make_engine_large"
+	bl_label = "Make Large Engine"
+	bl_options = {"UNDO"}
+
+	def invoke(self, context, event):
+		nozzleJoint = bpy.data.objects.new("JNT[EngineNozzle"+str(context.scene.engine)+"]",None)
+		context.scene.objects.link(nozzleJoint)
+		nozzleJoint.location = bpy.context.selected_objects[0].location
+		nozzleJoint.parent = bpy.data.objects['ROOT_LOD[0]']
+		axisJoint = bpy.data.objects.new("AXIS[EngineNozzle"+str(context.scene.engine)+"]",None)
+		context.scene.objects.link(axisJoint)
+		axisJoint.parent = nozzleJoint
+
+		
+
+		engineGlowMat = bpy.data.materials.new("MATGLOW[HODOR_Glow]")
+
+		glowEnum=1
+
+		for ob in bpy.context.selected_objects:
+			ob.name = "GLOW[EngineGlow"+str(glowEnum)+"]_LOD[0]"
+			ob.data.name = ob.name+"Mesh"
+			ob.data.materials.append(engineGlowMat)
+			ob.parent = nozzleJoint
+			ob.location = 0,0,0
+			glowEnum = glowEnum+1
+
+
+		return{"FINISHED"}
+
 
 class MakeDockPath(bpy.types.Operator):
 	bl_idname = "hmrm.make_dock_path"
@@ -512,9 +547,9 @@ class MakeEngineSmall(bpy.types.Operator):
                 self.hasRoot = True
                 
         if self.hasRoot:
-            jntNozzle = "JNT[EngineNozzle" + str(context.scene.engine_small) + "]"
-            jntBurn = "BURN[EngineBurn" + str(context.scene.engine_small) + "]"
-            jntShape = "ETSH[EngineShape" + str(context.scene.engine_small) + "]"
+            jntNozzle = "JNT[EngineNozzle" + str(context.scene.engine) + "]"
+            jntBurn = "BURN[EngineBurn" + str(context.scene.engine) + "]"
+            jntShape = "ETSH[EngineShape" + str(context.scene.engine) + "]"
             
             engine_nozzle = bpy.data.objects.new(jntNozzle, None)
             context.scene.objects.link(engine_nozzle)
