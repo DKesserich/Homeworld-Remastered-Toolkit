@@ -63,60 +63,67 @@ class HMRMPanelShip(bpy.types.Panel):
 		layout.operator("hmrm.make_col", "Copy to Collision")
 
 class HMRMPanelTools(bpy.types.Panel):
-    """Creates a Panel in the Create window"""
-    bl_label = "Hardpoints"
-    bl_idname = "HMRM_TOOLS"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-    bl_context = "objectmode"
-    bl_category = "HW Joint Tools"
-    
-    
-    bpy.types.Scene.hardpoint_name = StringProperty(
-        name = "Name",
-        default = "Default")
-    bpy.types.Scene.hardpoint_num = IntProperty(
-        name = "Number",
-        min = 0)
-    bpy.types.Scene.weapon_mesh_name = StringProperty(
-        name = "Name",
-        default = "Default")
-        
-        
-    bpy.types.Scene.utility_name = IntProperty(
-        name = "Hardpoint",
-        min = 0)
-                
-        
-    bpy.types.Scene.parent_ship = StringProperty(
-        name = "Ship JNT")
-    
-    
-    def draw(self, context):
-        layout = self.layout
-        scn = context.scene
-        
-        layout.label("Weapons")
-        layout.prop(scn, 'hardpoint_name')
-        layout.prop(scn,'hardpoint_num')
-        layout.operator("hmrm.make_weapon", "Weapon").createOptions = "Gun"
-        layout.operator("hmrm.make_weapon", "Turret").createOptions = "Turret"
-        
-        layout.separator()
-        
-        layout.label("Weapon Mesh")
-        layout.prop_search(scn, "parent_ship", scn, "objects")
-        layout.prop(scn, 'weapon_mesh_name')
-        layout.prop(scn,'hardpoint_num')
-        layout.operator("hmrm.make_weapon", "Mesh to Weapon").createOptions = "Mesh"
-        
-        layout.separator()
-        
-        layout.label("Utilities")
-        layout.prop(scn,'utility_name')
-        layout.operator("hmrm.make_hardpoint", "Repair").hardName = "RepairPoint"
-        layout.operator("hmrm.make_hardpoint", "Salvage").hardName = "SalvagePoint"
-        layout.operator("hmrm.make_hardpoint","Capture").hardName = "CapturePoint"
+	"""Creates a Panel in the Create window"""
+	bl_label = "Hardpoints"
+	bl_idname = "HMRM_TOOLS"
+	bl_space_type = 'VIEW_3D'
+	bl_region_type = 'TOOLS'
+	bl_context = "objectmode"
+	bl_category = "HW Joint Tools"
+	
+	
+	bpy.types.Scene.hardpoint_name = StringProperty(
+		name = "Name",
+		default = "Default")
+	bpy.types.Scene.hardpoint_num = IntProperty(
+		name = "Number",
+		min = 0)
+	bpy.types.Scene.weapon_mesh_name = StringProperty(
+		name = "Name",
+		default = "Default")
+		
+		
+	bpy.types.Scene.utility_name = IntProperty(
+		name = "Hardpoint",
+		min = 0)
+		
+		
+	bpy.types.Scene.parent_ship = StringProperty(
+		name = "Ship JNT")
+	
+	
+	def draw(self, context):
+		layout = self.layout
+		scn = context.scene
+		
+		layout.label("Weapons")
+		layout.prop(scn, 'hardpoint_name')
+		layout.prop(scn,'hardpoint_num')
+		layout.operator("hmrm.make_weapon", "Weapon").createOptions = "Gun"
+		layout.operator("hmrm.make_weapon", "Turret").createOptions = "Turret"
+		
+		layout.separator()
+		
+		layout.label("Weapon Mesh")
+		layout.prop_search(scn, "parent_ship", scn, "objects")
+		layout.prop(scn, 'weapon_mesh_name')
+		layout.prop(scn,'hardpoint_num')
+		layout.operator("hmrm.make_weapon", "Mesh to Weapon").createOptions = "Mesh"
+		
+		layout.separator()
+		
+		layout.label("Utilities & Subsystems")
+		layout.prop(scn,'utility_name')
+		layout.operator("hmrm.make_hardpoint", "Repair").hardName = "RepairPoint"
+		layout.operator("hmrm.make_hardpoint", "Salvage").hardName = "SalvagePoint"
+		layout.operator("hmrm.make_hardpoint","Capture").hardName = "CapturePoint"
+		layout.operator("hmrm.make_subsystem","Resource").subType = "Hardpoint_Resource"
+		layout.operator("hmrm.make_subsystem","Production").subType = "HardpointProduction"
+		layout.operator("hmrm.make_subsystem","Sensors").subType = "HardpointSensors"
+		layout.operator("hmrm.make_subsystem","Target").subType = "Hardpoint_Target"
+		layout.operator("hmrm.make_subsystem","Generic").subType = "HardpointGeneric"
+		
+		
         
         
 class HMRMPanelEngines(bpy.types.Panel):
@@ -154,6 +161,7 @@ class HMRMPanelEngines(bpy.types.Panel):
 		layout.prop(scn,'engine_small_flame')
 		layout.operator("hmrm.make_engine_small","Add").useSelected = False
 		layout.operator("hmrm.make_engine_small","Convert Selection").useSelected = True
+		layout.operator("hmrm.make_subsystem","Engine Hardpoint").subType = "Hardpoint_Engine"
 
 
 #Navlight Panel
@@ -483,53 +491,99 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
             
         return {"FINISHED"}
-  
+
+
+#Subsystem Maker
+class MakeSubSystem(bpy.types.Operator):
+	bl_idname = "hmrm.make_subsystem"
+	bl_label = "Add Subsystem"
+	bl_options = {"UNDO"}
+	subType = bpy.props.StringProperty()	
+
+	
+	
+	def invoke(self, context, event):
+		if context.scene.utility_name > int(0):
+			self.subType = self.subType+str(context.scene.utility_name)
+		
+		if bpy.data.objects.get("ROOT_LOD[0]") is not None:
+			jntName_Pos = "JNT["+self.subType+"_Position]"
+			jntName_Dir = "JNT["+self.subType+"_Direction]"
+			jntName_Rest = "JNT["+self.subType+"_Rest]"
+
+			subsys_pos = bpy.data.objects.new(jntName_Pos, None)
+			context.scene.objects.link(subsys_pos)
+			subsys_dir = bpy.data.objects.new(jntName_Dir,None)
+			context.scene.objects.link(subsys_dir)
+			subsys_rest = bpy.data.objects.new(jntName_Rest,None)
+			context.scene.objects.link(subsys_rest)
+
+			subsys_pos.location = bpy.context.scene.cursor_location
+			if self.subType != "Hardpoint_Engine":
+				subsys_pos.rotation_euler.x = 1.57079633
+			subsys_pos.parent = bpy.data.objects.get("ROOT_LOD[0]")
+			subsys_dir.parent = subsys_pos
+			subsys_dir.location.xyz = [0,10,0]
+			subsys_rest.parent = subsys_pos
+			subsys_rest.location.xyz = [0,0,10]
+
+		else:
+			self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
+
+
+		return {"FINISHED"}
+	
+	  
 class MakeHardpoint(bpy.types.Operator):
-    bl_idname = "hmrm.make_hardpoint"
-    bl_label = "Add Hardpoint"
-    bl_options = {"UNDO"}
-    hardName = bpy.props.StringProperty()
-    hasRoot = bpy.props.BoolProperty()
-    
-    def invoke(self, context, event):
-        
-        obs = bpy.data.objects
-        for ob in obs:
-            if "ROOT_LOD[0]" in ob.name:
-                self.hasRoot = True
-                
-        if self.hasRoot:
-            jntName_Pos = "JNT[" + self.hardName + str(context.scene.utility_name) + "]"
-            jntName_Head = "JNT[" + self.hardName + str(context.scene.utility_name) + "Heading]"
-            jntName_Left = "JNT[" + self.hardName + str(context.scene.utility_name) + "Left]"
-            jntName_Up = "JNT[" + self.hardName + str(context.scene.utility_name) + "Up]"
-            
-            hardp_pos = bpy.data.objects.new(jntName_Pos, None)
-            context.scene.objects.link(hardp_pos)
-            
-            hardp_head = bpy.data.objects.new(jntName_Head, None)
-            context.scene.objects.link(hardp_head)
-            
-            hardp_left = bpy.data.objects.new(jntName_Left, None)
-            context.scene.objects.link(hardp_left)
-            
-            hardp_up = bpy.data.objects.new(jntName_Up, None)
-            context.scene.objects.link(hardp_up)
-            
-            hardp_pos.parent = context.scene.objects["ROOT_LOD[0]"]
-            hardp_head.parent = hardp_pos
-            hardp_left.parent = hardp_pos
-            hardp_up.parent = hardp_pos
-            
-            hardp_pos.location = bpy.context.scene.cursor_location
-            hardp_pos.rotation_euler.x = 1.57079633
-            hardp_up.location.xyz = [0,1,0]
-            hardp_head.location.xyz = [0,0,1]
-            hardp_left.location.xyz = [1,0,0]
-        else:
-            self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
-        
-        return {"FINISHED"}
+	bl_idname = "hmrm.make_hardpoint"
+	bl_label = "Add Hardpoint"
+	bl_options = {"UNDO"}
+	hardName = bpy.props.StringProperty()
+	hasRoot = bpy.props.BoolProperty()
+	
+	def invoke(self, context, event):
+		obs = bpy.data.objects
+		for ob in obs:
+			if "ROOT_LOD[0]" in ob.name:
+				self.hasRoot = True
+				
+		
+		if self.hasRoot:
+			jntName_Pos = "JNT[" + self.hardName + str(context.scene.utility_name) + "]"
+			jntName_Head = "JNT[" + self.hardName + str(context.scene.utility_name) + "Heading]"
+			jntName_Left = "JNT[" + self.hardName + str(context.scene.utility_name) + "Left]"
+			jntName_Up = "JNT[" + self.hardName + str(context.scene.utility_name) + "Up]"
+			
+			
+			
+			hardp_pos = bpy.data.objects.new(jntName_Pos, None)
+			context.scene.objects.link(hardp_pos)
+			
+			hardp_head = bpy.data.objects.new(jntName_Head, None)
+			context.scene.objects.link(hardp_head)
+			
+			
+			hardp_left = bpy.data.objects.new(jntName_Left, None)
+			context.scene.objects.link(hardp_left)
+			
+			hardp_up = bpy.data.objects.new(jntName_Up, None)
+			context.scene.objects.link(hardp_up)
+			
+			hardp_pos.parent = context.scene.objects["ROOT_LOD[0]"]
+			hardp_head.parent = hardp_pos
+			
+			hardp_left.parent = hardp_pos
+			hardp_up.parent = hardp_pos
+			
+			hardp_pos.location = bpy.context.scene.cursor_location
+			hardp_pos.rotation_euler.x = 1.57079633
+			hardp_up.location.xyz = [0,1,0]
+			hardp_head.location.xyz = [0,0,-1]
+			hardp_left.location.xyz = [1,0,0]
+		else:
+			self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
+			
+		return {"FINISHED"}
     
     
 class MakeEngineSmall(bpy.types.Operator):
