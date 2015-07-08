@@ -500,7 +500,10 @@ class DaeExporter:
 		#mesh=node.to_mesh(self.scene,apply_modifiers,"RENDER") #is this allright?
 
 		triangulate=self.config["use_triangles"]
-		#if (triangulate):
+		if (triangulate):
+			bpy.context.scene.objects.active = node
+			bpy.ops.object.modifier_add(type='TRIANGULATE')
+			bpy.ops.object.modifier_apply(modifier="Triangulate")
 		#	bm = bmesh.new()
 		#	bm.from_mesh(mesh)
 		#	bmesh.ops.triangulate(bm, faces=bm.faces)

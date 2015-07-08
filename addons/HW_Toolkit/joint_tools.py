@@ -106,7 +106,7 @@ class HMRMPanelTools(bpy.types.Panel):
 		
 		layout.label("Weapon Mesh")
 		layout.prop_search(scn, "parent_ship", scn, "objects")
-		layout.prop(scn, 'weapon_mesh_name')
+		#layout.prop(scn, 'weapon_mesh_name')
 		layout.prop(scn,'hardpoint_num')
 		layout.operator("hmrm.make_weapon", "Mesh to Weapon").createOptions = "Mesh"
 		
@@ -429,7 +429,7 @@ class MakeWeaponHardpoint(bpy.types.Operator):
                 context.scene.objects.link(weapon_lat)
                 
             if self.createOptions == "Mesh":
-                jntName_Mesh = "JNT["+ context.scene.weapon_mesh_name +"."+str(context.scene.hardpoint_num)+"]"
+                jntName_Mesh = "JNT["+ context.scene.hardpoint_name +"."+str(context.scene.hardpoint_num)+"]"
                 weapon_mesh = bpy.data.objects.new(jntName_Mesh, None)
                 context.scene.objects.link(weapon_mesh)
                 
@@ -461,8 +461,8 @@ class MakeWeaponHardpoint(bpy.types.Operator):
             if self.createOptions == "Turret":
                 weapon_lat.parent = weapon_pos
             if self.createOptions == "Mesh":
-                bpy.context.selected_objects[0].name = "MULT[" + context.scene.weapon_mesh_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
-                bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.weapon_mesh_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
+                bpy.context.selected_objects[0].name = "MULT[" + context.scene.hardpoint_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
+                bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.hardpoint_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
                 weapon_lat.parent = weapon_pos
                 weapon_mesh.parent = context.scene.objects[context.scene.parent_ship]
             
