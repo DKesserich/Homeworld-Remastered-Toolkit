@@ -1260,7 +1260,7 @@ class DaeExporter:
 		elif ("SEG[" in node.name):
 			#Remove the .00x in the event this isn't the first SEG node with this index
 			nodeName = node.name[0]+node.name[1]+node.name[2]+node.name[3]+node.name[4]+node.name[5]
-			segTol = str(node["Tolerance"])
+			segTol = str(int(node.empty_draw_size))
 			segSpeed = str(node["Speed"])
 			nodeName = nodeName+'_Tol['+segTol+']_Spd['+segSpeed+']'
 			if hasattr(node,'["Flags"]'):
