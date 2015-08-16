@@ -214,16 +214,22 @@ class HMRMPanelDockPaths(bpy.types.Panel):
 		layout.operator("hmrm.make_dock_path","Make Entry Path").createOption = "entryPath"
 		layout.operator("hmrm.make_dock_path","Make Exit Path").createOption = "exitPath"
 
-
+#Large Engine mesh converter
 class MakeLargeEngine(bpy.types.Operator):
 	bl_idname = "hmrm.make_engine_large"
 	bl_label = "Make Large Engine"
 	bl_options = {"UNDO"}
-
+	
+	
+	
 	def invoke(self, context, event):
+		shipRoot = context.scene.objects["ROOT_LOD[0]"]
+		cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+		localCoords = shipRoot.matrix_world.inverted()
+
 		nozzleJoint = bpy.data.objects.new("JNT[EngineNozzle"+str(context.scene.engine)+"]",None)
 		context.scene.objects.link(nozzleJoint)
-		nozzleJoint.location = bpy.context.selected_objects[0].location
+		nozzleJoint.location = localCoords * bpy.context.selected_objects[0].location
 		nozzleJoint.parent = bpy.data.objects['ROOT_LOD[0]']
 		axisJoint = bpy.data.objects.new("AXIS[EngineNozzle"+str(context.scene.engine)+"]",None)
 		context.scene.objects.link(axisJoint)
@@ -241,6 +247,8 @@ class MakeLargeEngine(bpy.types.Operator):
 			ob.data.materials.append(engineGlowMat)
 			ob.parent = nozzleJoint
 			ob.location = 0,0,0
+			ob.rotation_euler.x = -1.57079633
+			bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 			glowEnum = glowEnum+1
 
 
@@ -255,6 +263,10 @@ class MakeDockPath(bpy.types.Operator):
 	hasHoldDock = bpy.props.BoolProperty()
 
 	def invoke(self, context,event):
+		shipRoot = context.scene.objects["ROOT_LOD[0]"]
+		cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+		localCoords = shipRoot.matrix_world.inverted()
+		
 		if bpy.data.objects.find('HOLD_DOCK') != -1:
 			self.hasHoldDock = True
 		else:
@@ -284,7 +296,7 @@ class MakeDockPath(bpy.types.Operator):
 				seg.empty_draw_type = "SPHERE"
 				seg["Speed"] = 50
 				seg["Flags"] = "None"
-				seg.location = bpy.context.scene.cursor_location
+				seg.location = cursorLoc
 
 		if self.createOption == "exitPath":
 			pathRoot = bpy.data.objects.new("DOCK["+context.scene.pathName+"Ex]",None)
@@ -302,7 +314,7 @@ class MakeDockPath(bpy.types.Operator):
 				seg["Tolerance"] = 100
 				seg["Speed"] = 50
 				seg["Flags"] = "None"
-				seg.location = bpy.context.scene.cursor_location
+				seg.location = cursorLoc
 
 		return {"FINISHED"}
 
@@ -336,9 +348,12 @@ class MakeShipLOD(bpy.types.Operator):
 				ship_jnt = bpy.data.objects.new(jntName, None)
 				context.scene.objects.link(ship_jnt)
 				
+				
+				
 			LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
 			context.scene.objects.link(LOD_jnt)
-			
+			LOD_jnt.rotation_euler.x = 1.57079633
+
 			if context.scene.lod_num == 0:
 				class_jnt.parent = info_jnt
 				uv_joint.parent = info_jnt
@@ -353,6 +368,8 @@ class MakeShipLOD(bpy.types.Operator):
 				bpy.context.selected_objects[0].data.name = bpy.context.selected_objects[0].name
 				
 			if context.scene.lod_num == 0:
+				bpy.context.selected_objects[0].rotation_euler.x = -1.57079633
+				bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 				bpy.context.selected_objects[0].parent = ship_jnt
 			else:
 				bpy.context.selected_objects[0].parent = LOD_jnt
@@ -385,10 +402,10 @@ class MakeShipCOL(bpy.types.Operator):
 			
 			col_obj.name = colMesh
 			col_obj.data.name = colMesh
-			col_obj.parent = col_jnt
+			col_obj.parent = col_jnt			
 			
 			col_jnt.location = bpy.context.scene.cursor_location
-			col_jnt.rotation_euler.x = -1.57079633
+			col_jnt.rotation_euler.x = 1.57079633
 			col_jnt.location.y = 0
 			col_jnt.location.z = 0
 		else:
@@ -397,100 +414,106 @@ class MakeShipCOL(bpy.types.Operator):
 		return {"FINISHED"}
         
 class MakeWeaponHardpoint(bpy.types.Operator):
-    bl_idname = "hmrm.make_weapon"
-    bl_label = "Add Weapon Hardpoint"
-    bl_options = {"UNDO"}
-    createOptions = bpy.props.StringProperty()
-    hasRoot = bpy.props.BoolProperty()
- 
-    def invoke(self, context, event):
-        
-        obs = bpy.data.objects
-        for ob in obs:
-            if "ROOT_LOD[0]" in ob.name:
-                self.hasRoot = True
-                
-        if self.createOptions == "Mesh":
-            if "JNT" not in context.scene.parent_ship:
-                self.report({'ERROR'}, "No parent found. Please select your ship JNT[****]")
-                return {"FINISHED"}
-                
-        if self.hasRoot:
-            tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
-                
-            jntName_Pos = "JNT[Weapon_" + tempName + "_Position]"
-            jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
-            jntName_Dir = "JNT[Weapon_" + tempName + "_Direction]"
-            jntName_Muz = "JNT[Weapon_" + tempName +"_Muzzle]"
-            
-            if self.createOptions == "Turret":
-                jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
-                weapon_lat = bpy.data.objects.new(jntName_Lat, None)
-                context.scene.objects.link(weapon_lat)
-                
-            if self.createOptions == "Mesh":
-                jntName_Mesh = "JNT["+ context.scene.hardpoint_name +"."+str(context.scene.hardpoint_num)+"]"
-                weapon_mesh = bpy.data.objects.new(jntName_Mesh, None)
-                context.scene.objects.link(weapon_mesh)
-                
-                jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
-                weapon_lat = bpy.data.objects.new(jntName_Lat, None)
-                context.scene.objects.link(weapon_lat)
-            
-            weapon_pos = bpy.data.objects.new(jntName_Pos, None)
-            context.scene.objects.link(weapon_pos)
-            
-            weapon_dir = bpy.data.objects.new(jntName_Dir, None)
-            context.scene.objects.link(weapon_dir)
-            
-            weapon_rest = bpy.data.objects.new(jntName_Rest, None)
-            context.scene.objects.link(weapon_rest)
-
-            weapon_muzzle = bpy.data.objects.new(jntName_Muz, None)
-            context.scene.objects.link(weapon_muzzle)
-    		
-            weapon_pos.parent = context.scene.objects["ROOT_LOD[0]"]
-            weapon_dir.parent = weapon_pos
-            weapon_rest.parent = weapon_pos
-            
-            if self.createOptions == "Mesh":
-                weapon_muzzle.parent = weapon_lat
-            else:
-                weapon_muzzle.parent = weapon_pos
-            
-            if self.createOptions == "Turret":
-                weapon_lat.parent = weapon_pos
-            if self.createOptions == "Mesh":
-                bpy.context.selected_objects[0].name = "MULT[" + context.scene.hardpoint_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
-                bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.hardpoint_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
-                weapon_lat.parent = weapon_pos
-                weapon_mesh.parent = context.scene.objects[context.scene.parent_ship]
-            
-            #Following standard Blender workflow, create the object at the 3D Cursor location
-            #Also, since the Direction and Rest joints are in local space for Postion,
-            #and HODOR expects Y-Up, offset Y for Dir and Z for rest.
-            #Rotate Pos 90 degrees on X to align with Blender world space.
-            
-            if self.createOptions == "Mesh":
-			#when converting a mesh to a turret, create the weapon pos at the selected mesh's root
-                weapon_mesh.location = bpy.context.selected_objects[0].location
-                weapon_pos.location = bpy.context.selected_objects[0].location
-            else:
-                weapon_pos.location = bpy.context.scene.cursor_location
-            weapon_pos.rotation_euler.x = 1.57079633
-            weapon_dir.location.xyz = [0,1,0]
-            weapon_rest.location.xyz = [0,0,1]
-            weapon_muzzle.location.xyz = [0,0,-0.25]
-            
-            if self.createOptions == "Mesh":
-                bpy.context.selected_objects[0].parent = weapon_pos
-                bpy.context.selected_objects[0].location = [0,0,0]
-                bpy.context.selected_objects[0].rotation_euler.x = -1.57079633
-                
-        else:
-            self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
-            
-        return {"FINISHED"}
+	bl_idname = "hmrm.make_weapon"
+	bl_label = "Add Weapon Hardpoint"
+	bl_options = {"UNDO"}
+	createOptions = bpy.props.StringProperty()
+	hasRoot = bpy.props.BoolProperty()
+	
+	def invoke(self, context, event):
+	
+		obs = bpy.data.objects
+		
+		for ob in obs:
+			if "ROOT_LOD[0]" in ob.name:
+				self.hasRoot = True
+				
+		if self.createOptions == "Mesh":
+			if "JNT" not in context.scene.parent_ship:
+				self.report({'ERROR'}, "No parent found. Please select your ship JNT[****]")
+				return {"FINISHED"}
+				
+		if self.hasRoot:
+			tempName = context.scene.hardpoint_name  + str(context.scene.hardpoint_num)
+			
+			jntName_Pos = "JNT[Weapon_" + tempName + "_Position]"
+			jntName_Rest = "JNT[Weapon_" + tempName + "_Rest]"
+			jntName_Dir = "JNT[Weapon_" + tempName + "_Direction]"
+			jntName_Muz = "JNT[Weapon_" + tempName +"_Muzzle]"
+			
+			shipRoot = context.scene.objects["ROOT_LOD[0]"]
+			cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+			localCoords = shipRoot.matrix_world.inverted()
+			
+			if self.createOptions == "Turret":
+				jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
+				weapon_lat = bpy.data.objects.new(jntName_Lat, None)
+				context.scene.objects.link(weapon_lat)
+			
+			if self.createOptions == "Mesh":
+				jntName_Mesh = "JNT["+ context.scene.hardpoint_name +"."+str(context.scene.hardpoint_num)+"]"
+				weapon_mesh = bpy.data.objects.new(jntName_Mesh, None)
+				context.scene.objects.link(weapon_mesh)
+				
+				jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
+				weapon_lat = bpy.data.objects.new(jntName_Lat, None)
+				context.scene.objects.link(weapon_lat)
+			
+			weapon_pos = bpy.data.objects.new(jntName_Pos, None)
+			context.scene.objects.link(weapon_pos)
+			
+			weapon_dir = bpy.data.objects.new(jntName_Dir, None)
+			context.scene.objects.link(weapon_dir)
+			
+			weapon_rest = bpy.data.objects.new(jntName_Rest, None)
+			context.scene.objects.link(weapon_rest)
+			
+			weapon_muzzle = bpy.data.objects.new(jntName_Muz, None)
+			context.scene.objects.link(weapon_muzzle)
+			
+			#Following standard Blender workflow, create the object at the 3D Cursor location
+			#Also, since the Direction and Rest joints are in local space for Postion,
+			#and HODOR expects Y-Up, offset Y for Dir and Z for rest.
+			#Rotate Pos 90 degrees on X to align with Blender world space.
+			
+			if self.createOptions == "Mesh":
+				#when converting a mesh to a turret, create the weapon pos at the selected mesh's root
+				weapon_mesh.location = localCoords * bpy.context.selected_objects[0].location
+				weapon_pos.location = localCoords * bpy.context.selected_objects[0].location
+			else:
+				weapon_pos.location = cursorLoc
+			weapon_dir.location.xyz = [0,1,0]
+			weapon_rest.location.xyz = [0,0,1]
+			weapon_muzzle.location.xyz = [0,0,-0.25]
+			
+			if self.createOptions == "Mesh":
+				bpy.context.selected_objects[0].parent = weapon_pos
+				bpy.context.selected_objects[0].location = [0,0,0]
+				bpy.context.selected_objects[0].rotation_euler.x = -1.57079633
+				bpy.ops.object.transform_apply(location=False, rotation=True,scale=False)
+			
+			weapon_pos.parent = context.scene.objects["ROOT_LOD[0]"]
+			weapon_dir.parent = weapon_pos
+			weapon_rest.parent = weapon_pos
+			
+			if self.createOptions == "Mesh":
+				weapon_muzzle.parent = weapon_lat
+			else:
+				weapon_muzzle.parent = weapon_pos
+				
+			if self.createOptions == "Turret":
+				weapon_lat.parent = weapon_pos
+			if self.createOptions == "Mesh":
+				bpy.context.selected_objects[0].name = "MULT[" + context.scene.hardpoint_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
+				bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.hardpoint_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
+				weapon_lat.parent = weapon_pos
+				weapon_mesh.parent = context.scene.objects[context.scene.parent_ship]
+				
+				
+		else:
+			self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
+			
+		return {"FINISHED"}
 
 
 #Subsystem Maker
@@ -507,6 +530,10 @@ class MakeSubSystem(bpy.types.Operator):
 			self.subType = self.subType+str(context.scene.utility_name)
 		
 		if bpy.data.objects.get("ROOT_LOD[0]") is not None:
+			shipRoot = context.scene.objects["ROOT_LOD[0]"]
+			cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+			localCoords = shipRoot.matrix_world.inverted()
+
 			jntName_Pos = "JNT["+self.subType+"_Position]"
 			jntName_Dir = "JNT["+self.subType+"_Direction]"
 			jntName_Rest = "JNT["+self.subType+"_Rest]"
@@ -518,10 +545,11 @@ class MakeSubSystem(bpy.types.Operator):
 			subsys_rest = bpy.data.objects.new(jntName_Rest,None)
 			context.scene.objects.link(subsys_rest)
 
-			subsys_pos.location = bpy.context.scene.cursor_location
-			if self.subType != "Hardpoint_Engine":
-				subsys_pos.rotation_euler.x = 1.57079633
+			
+			#if self.subType != "Hardpoint_Engine":
+			#	subsys_pos.rotation_euler.x = 1.57079633
 			subsys_pos.parent = bpy.data.objects.get("ROOT_LOD[0]")
+			subsys_pos.location = cursorLoc
 			subsys_dir.parent = subsys_pos
 			subsys_dir.location.xyz = [0,10,0]
 			subsys_rest.parent = subsys_pos
@@ -549,6 +577,11 @@ class MakeHardpoint(bpy.types.Operator):
 				
 		
 		if self.hasRoot:
+			
+			shipRoot = context.scene.objects["ROOT_LOD[0]"]
+			cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+			localCoords = shipRoot.matrix_world.inverted()
+
 			jntName_Pos = "JNT[" + self.hardName + str(context.scene.utility_name) + "]"
 			jntName_Head = "JNT[" + self.hardName + str(context.scene.utility_name) + "Heading]"
 			jntName_Left = "JNT[" + self.hardName + str(context.scene.utility_name) + "Left]"
@@ -575,10 +608,10 @@ class MakeHardpoint(bpy.types.Operator):
 			hardp_left.parent = hardp_pos
 			hardp_up.parent = hardp_pos
 			
-			hardp_pos.location = bpy.context.scene.cursor_location
-			hardp_pos.rotation_euler.x = 1.57079633
+			hardp_pos.location = cursorLoc
+			#hardp_pos.rotation_euler.x = 1.57079633
 			hardp_up.location.xyz = [0,1,0]
-			hardp_head.location.xyz = [0,0,-1]
+			hardp_head.location.xyz = [0,0,1]
 			hardp_left.location.xyz = [1,0,0]
 		else:
 			self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
@@ -604,6 +637,10 @@ class MakeEngineSmall(bpy.types.Operator):
             jntNozzle = "JNT[EngineNozzle" + str(context.scene.engine) + "]"
             jntBurn = "BURN[EngineBurn" + str(context.scene.engine) + "]"
             jntShape = "ETSH[EngineShape" + str(context.scene.engine) + "]"
+
+            shipRoot = context.scene.objects["ROOT_LOD[0]"]
+            cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+            localCoords = shipRoot.matrix_world.inverted()
             
             engine_nozzle = bpy.data.objects.new(jntNozzle, None)
             context.scene.objects.link(engine_nozzle)
@@ -635,13 +672,13 @@ class MakeEngineSmall(bpy.types.Operator):
                 flame_div.location.z = 0-f
             
             
-            engine_nozzle.rotation_euler.x = 1.57079633
+            #engine_nozzle.rotation_euler.x = 1.57079633
             if self.useSelected:
-                engine_nozzle.location = bpy.context.selected_objects[0].location
+                engine_nozzle.location = localCoords * bpy.context.selected_objects[0].location
                 bpy.context.selected_objects[0].parent = engine_nozzle
                 bpy.context.selected_objects[0].location.xyz = [0,0,0]
             else:
-                engine_nozzle.location = bpy.context.scene.cursor_location
+                engine_nozzle.location = cursorLoc
         else:
             self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
         
@@ -663,6 +700,10 @@ class ConvertToNavlight(bpy.types.Operator):
                     self.hasRoot = True
                 
             if self.hasRoot:
+                shipRoot = context.scene.objects["ROOT_LOD[0]"]
+                cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+                localCoords = shipRoot.matrix_world.inverted()
+
                 if bpy.context.active_object.type == "LAMP":
                     navLight = bpy.context.active_object
 
@@ -673,6 +714,8 @@ class ConvertToNavlight(bpy.types.Operator):
                     navLight.data["Flags"] = "None"
 
                     navLight.parent = bpy.data.objects['ROOT_LOD[0]']
+                    navLight.location = localCoords * navLight.location
+
             else:
                 self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
             
