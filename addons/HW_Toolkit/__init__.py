@@ -21,6 +21,7 @@
 bl_info = {
     "name": "Homeworld Remastered Toolkit",
     "author": "Juan Linietsky, David Lejeune, Dominic Cassidy",
+    "version": "112",
     "blender": (2, 5, 8),
     "api": 38691,
     "location": "File > Import-Export",
