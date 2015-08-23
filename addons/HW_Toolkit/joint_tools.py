@@ -21,6 +21,7 @@
 import math
 import bpy
 import mathutils
+import addon_utils
 
 from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty, IntProperty
 
@@ -61,6 +62,7 @@ class HMRMPanelShip(bpy.types.Panel):
 		
 		layout.operator("hmrm.make_ship", "Convert to Ship")
 		layout.operator("hmrm.make_col", "Copy to Collision")
+		layout.operator("hmrm.name_fixer", "Fix Names")
 
 class HMRMPanelTools(bpy.types.Panel):
 	"""Creates a Panel in the Create window"""
@@ -332,6 +334,9 @@ class MakeShipLOD(bpy.types.Operator):
 			jntName_class = "Class[MultiMesh]_Version[512]"
 			jntName_LOD = "ROOT_LOD[" + str(context.scene.lod_num) + "]"
 			jntName = "JNT[" + context.scene.ship_name + "]"
+
+			#addonsFolder = str(addon_utils.paths())[2:-2]
+			#bpy.ops.wm.append(filepath="//SalMesh.blend/Object/SalvagePoint visual mesh",directory=addonsFolder+"\\HW_Toolkit\\SalMesh.Blend\\Object\\",filename="SalvagePoint visual mesh")
 			
 			if context.scene.flag_uv:
 				jntName_uv = "UVSets[2]"
@@ -482,9 +487,9 @@ class MakeWeaponHardpoint(bpy.types.Operator):
 				weapon_pos.location = localCoords * bpy.context.selected_objects[0].location
 			else:
 				weapon_pos.location = cursorLoc
-			weapon_dir.location.xyz = [0,1,0]
-			weapon_rest.location.xyz = [0,0,1]
-			weapon_muzzle.location.xyz = [0,0,-0.25]
+			weapon_dir.location.xyz = [0,10,0]
+			weapon_rest.location.xyz = [0,0,10]
+			weapon_muzzle.location.xyz = [0,0,.1]
 			
 			if self.createOptions == "Mesh":
 				bpy.context.selected_objects[0].parent = weapon_pos
@@ -498,15 +503,20 @@ class MakeWeaponHardpoint(bpy.types.Operator):
 			
 			if self.createOptions == "Mesh":
 				weapon_muzzle.parent = weapon_lat
+				weapon_muzzle.location.xyz = [0,0,1]
 			else:
 				weapon_muzzle.parent = weapon_pos
 				
 			if self.createOptions == "Turret":
 				weapon_lat.parent = weapon_pos
+				weapon_lat.location.xyz = [0,2,0]
+				weapon_muzzle.parent = weapon_lat
+				weapon_muzzle.location.xyz = [0,0,1]
 			if self.createOptions == "Mesh":
 				bpy.context.selected_objects[0].name = "MULT[" + context.scene.hardpoint_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
 				bpy.context.selected_objects[0].data.name = "MULT[" + context.scene.hardpoint_name +"." + str(context.scene.hardpoint_num) + "]_LOD[0]"
 				weapon_lat.parent = weapon_pos
+				weapon_lat.location.xyz = [0,2,0]
 				weapon_mesh.parent = context.scene.objects[context.scene.parent_ship]
 				
 				
@@ -526,8 +536,7 @@ class MakeSubSystem(bpy.types.Operator):
 	
 	
 	def invoke(self, context, event):
-		if context.scene.utility_name > int(0):
-			self.subType = self.subType+str(context.scene.utility_name)
+		self.subType = self.subType+str(context.scene.utility_name)
 		
 		if bpy.data.objects.get("ROOT_LOD[0]") is not None:
 			shipRoot = context.scene.objects["ROOT_LOD[0]"]
@@ -574,7 +583,8 @@ class MakeHardpoint(bpy.types.Operator):
 		for ob in obs:
 			if "ROOT_LOD[0]" in ob.name:
 				self.hasRoot = True
-				
+		
+		
 		
 		if self.hasRoot:
 			
@@ -586,7 +596,6 @@ class MakeHardpoint(bpy.types.Operator):
 			jntName_Head = "JNT[" + self.hardName + str(context.scene.utility_name) + "Heading]"
 			jntName_Left = "JNT[" + self.hardName + str(context.scene.utility_name) + "Left]"
 			jntName_Up = "JNT[" + self.hardName + str(context.scene.utility_name) + "Up]"
-			
 			
 			
 			hardp_pos = bpy.data.objects.new(jntName_Pos, None)
@@ -610,9 +619,17 @@ class MakeHardpoint(bpy.types.Operator):
 			
 			hardp_pos.location = cursorLoc
 			#hardp_pos.rotation_euler.x = 1.57079633
-			hardp_up.location.xyz = [0,1,0]
-			hardp_head.location.xyz = [0,0,1]
-			hardp_left.location.xyz = [1,0,0]
+			hardp_up.location.xyz = [0,10,0]
+			hardp_head.location.xyz = [0,0,10]
+			hardp_left.location.xyz = [10,0,0]
+
+			#if self.hardName == "SalvagePoint":
+			#	bpy.ops.wm.append(filepath="//SalMesh.blend/Object/SalvagePoint visual mesh",directory=addonsFolder+"\\HW_Toolkit\\SalMesh.Blend\\Object\\",filename="SalvagePoint visual mesh")
+			#	salMesh = bpy.data.objects['SalvagePoint visual mesh']
+			#	salMesh.rotation_euler.x = -1.57079633
+			#	salMesh.select = True
+			#	bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+			#	salMesh.parent = hardp_pos
 		else:
 			self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
 			
@@ -720,3 +737,69 @@ class ConvertToNavlight(bpy.types.Operator):
                 self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
             
             return {"FINISHED"}
+
+class FixObjectNames(bpy.types.Operator):
+	bl_idname = "hmrm.name_fixer"
+	bl_label = "Automatically fix duplicate object names"
+	bl_options = {"UNDO"}
+
+	def invoke(self,context,event):
+		obs = bpy.data.objects
+
+		for ob in obs:
+			#Fixes Weapon Names
+			if "JNT[" in ob.name and "_Position" in ob.name and "Hard" not in ob.name:
+				jntName = ob.name[4:-10]				
+				if "].0" in ob.name:
+					jntName = jntName[:-4]
+					jntNum = int(jntName[-1:])
+					jntName = jntName[:-1]+str(jntNum+int(ob.name[-3:]))
+				ob.name = "JNT["+jntName+"_Position]"
+				for x in ob.children:
+					if "Latitude" in x.name:
+						x.name = "JNT["+jntName+"_Latitude]"
+						for y in x.children:
+							if "Muzzle" in y.name:
+								y.name = "JNT["+jntName+"_Muzzle]"
+					elif "Rest" in x.name:
+						x.name = "JNT["+jntName+"_Rest]"
+					elif "Direction" in x.name:
+						x.name = "JNT["+jntName+"_Direction]"
+					elif "Muzzle" in x.name:
+						x.name = "JNT["+jntName+"_Muzzle]"
+					if "MULT[" in x.name:
+						x.name = "MULT["+jntName[7:-1]+"."+jntName[-1:]+"]_LOD[0]"
+						x.data.name = x.name
+			#Fixes Repair, Salvage, and Capture Point Names
+			if "JNT[" in ob.name and ("Repair" in ob.name or "Salvage" in ob.name or "Capture" in ob.name):
+				jntName = ob.name[:-1]
+				if "].0" in ob.name:
+					jntName = jntName[:-4]
+					jntNum = int(jntName[-1:])
+					jntName = jntName[:-1]+str(jntNum+int(ob.name[-3:]))
+				ob.name = jntName+"]"
+				for x in ob.children:
+					if "Heading" in x.name:
+						x.name = jntName+"Heading]"
+					elif "Left" in x.name:
+						x.name = jntName+"Left]"
+					elif "Up" in x.name:
+						x.name = jntName+"Up]"
+
+			#Fixes Resource, Production, Sensors, Target, and Generic hardpoints
+			if "JNT[" in ob.name and "_Position" in ob.name and "Hard" in ob.name:
+				jntName = ob.name[4:-10]				
+				if "].0" in ob.name:
+					jntName = jntName[:-4]
+					jntNum = int(jntName[-1:])
+					jntName = jntName[:-1]+str(jntNum+int(ob.name[-3:]))
+				ob.name = "JNT["+jntName+"_Position]"
+				for x in ob.children:
+					if "Direction" in x.name:
+						x.name = "JNT["+jntName+"_Direction]"
+					elif "Rest" in x.name:
+						x.name = "JNT["+jntName+"_Rest]"
+
+
+						
+		return {"FINISHED"}
