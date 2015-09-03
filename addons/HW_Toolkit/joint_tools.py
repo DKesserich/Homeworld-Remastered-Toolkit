@@ -750,10 +750,17 @@ class FixObjectNames(bpy.types.Operator):
 			#Fixes Weapon Names
 			if "JNT[" in ob.name and "_Position" in ob.name and "Hard" not in ob.name:
 				jntName = ob.name[4:-10]				
-				if "].0" in ob.name:
+				if "].0" in ob.name and "Slave" not in ob.name:
 					jntName = jntName[:-4]
 					jntNum = int(jntName[-1:])
 					jntName = jntName[:-1]+str(jntNum+int(ob.name[-3:]))
+				elif "].0" in ob.name and "Slave" in ob.name:
+					jntName=jntName[:-4]
+					if jntName[-1:] is not "e":
+						jntNum=int(jntName[-1:])
+						jntName=jntName[:-1]+str(jntNum+int(ob.name[-3:]))
+					else:
+						jntName=jntName+"1"
 				ob.name = "JNT["+jntName+"_Position]"
 				for x in ob.children:
 					if "Latitude" in x.name:
