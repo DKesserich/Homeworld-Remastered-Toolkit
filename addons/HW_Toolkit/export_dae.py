@@ -1437,7 +1437,7 @@ class DaeExporter:
 		#Out Tangent - For Bezier Inerpolation - Not Supported - DL
 
 		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.X">')
-		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'translate.X-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-translate.X-input"/>')
 		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.X-output"/>')
 		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.X-interpolation"/>')
 		self.writel(S_ANIM,2,'</sampler>')
@@ -1483,7 +1483,7 @@ class DaeExporter:
 		#Out Tangent - For Bezier Inerpolation - Not Supported - DL
 
 		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.Y">')
-		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'translate.Y-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-translate.Y-input"/>')
 		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.Y-output"/>')
 		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.Y-interpolation"/>')
 		self.writel(S_ANIM,2,'</sampler>')
@@ -1529,7 +1529,7 @@ class DaeExporter:
 		#Out Tangent - For Bezier Inerpolation - Not Supported - DL
 
 		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.Z">')
-		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'translate.Z-input"/>')
+		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-translate.Z-input"/>')
 		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.Z-output"/>')
 		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.Z-interpolation"/>')
 		self.writel(S_ANIM,2,'</sampler>')
@@ -1700,10 +1700,19 @@ class DaeExporter:
 		# This improves performance enormously
 
 		print("anim from: "+str(start)+" to "+str(end)+" allowed: "+str(allowed))
+
+		#for node in self.scene.objects:
+		#	if node.animation_data.action != None:
+				#TODO Get the keys in the action and append that data into xform_cache
+		#		name = node.animation_data.action
+		#		if (not (name in xform_cache)):
+		#			xform_cache[name]=[]
+		
+		### This whole section is bullshit and dumb
 		for t in range(start,end+1):
 			self.scene.frame_set(t)
 			key = t * frame_len - frame_sub
-#			print("Export Anim Frame "+str(t)+"/"+str(self.scene.frame_end+1))
+			print("Export Anim Frame "+str(t)+"/"+str(self.scene.frame_end+1))
 
 			for node in self.scene.objects:
 
