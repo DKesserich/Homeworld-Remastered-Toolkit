@@ -1439,7 +1439,7 @@ class DaeExporter:
 		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.X">')
 		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-translate.X-input"/>')
 		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.X-output"/>')
-		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.X-interpolation"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'-translate.X-interpolation"/>')
 		self.writel(S_ANIM,2,'</sampler>')
 		if (matrices):
 			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-translate.X" target="'+target+'/translate.X"></channel>')
@@ -1485,7 +1485,7 @@ class DaeExporter:
 		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.Y">')
 		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-translate.Y-input"/>')
 		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.Y-output"/>')
-		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.Y-interpolation"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'-translate.Y-interpolation"/>')
 		self.writel(S_ANIM,2,'</sampler>')
 		if (matrices):
 			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-translate.Y" target="'+target+'/translate.Y"></channel>')
@@ -1531,7 +1531,7 @@ class DaeExporter:
 		self.writel(S_ANIM,2,'<sampler id="'+anim_id+'-translate.Z">')
 		self.writel(S_ANIM,3,'<input semantic="INPUT" source="#'+anim_id+'-translate.Z-input"/>')
 		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-translate.Z-output"/>')
-		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'translate.Z-interpolation"/>')
+		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'-translate.Z-interpolation"/>')
 		self.writel(S_ANIM,2,'</sampler>')
 		if (matrices):
 			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-translate.Z" target="'+target+'/translate.Z"></channel>')
