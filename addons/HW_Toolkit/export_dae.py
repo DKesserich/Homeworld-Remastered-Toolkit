@@ -1712,7 +1712,7 @@ class DaeExporter:
 				self.scene.frame_set(startFrame)
 				#xform_cache[name].append( (self.scene.frame_current, node.matrix_local.copy()) )
 				while self.scene.frame_current <= endFrame: 
-					xform_cache[name].append( (self.scene.frame_current, node.matrix_local.copy()) )
+					xform_cache[name].append( (self.scene.frame_current/self.scene.render.fps, node.matrix_local.copy()) )
 					#bpy.ops.screen.keyframe_jump()
 					self.scene.frame_set(self.scene.frame_current + 1)
 					if self.scene.frame_current == endFrame:
