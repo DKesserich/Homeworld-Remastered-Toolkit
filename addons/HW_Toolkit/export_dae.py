@@ -1701,15 +1701,25 @@ class DaeExporter:
 
 		print("anim from: "+str(start)+" to "+str(end)+" allowed: "+str(allowed))
 
-		#for node in self.scene.objects:
-		#	if node.animation_data.action != None:
-				#TODO Get the keys in the action and append that data into xform_cache
-		#		name = node.animation_data.action
-		#		if (not (name in xform_cache)):
-		#			xform_cache[name]=[]
+		for node in self.scene.objects:
+			name = None
+			if node.animation_data is not None and node.animation_data.action is not None:				
+				name = node.name
+				if (not (name in xform_cache)):
+					xform_cache[name]=[]
+				startFrame = node.animation_data.action.frame_range[0]
+				endFrame = node.animation_data.action.frame_range[1]
+				self.scene.frame_set(startFrame)
+				#xform_cache[name].append( (self.scene.frame_current, node.matrix_local.copy()) )
+				while self.scene.frame_current <= endFrame: 
+					xform_cache[name].append( (self.scene.frame_current, node.matrix_local.copy()) )
+					#bpy.ops.screen.keyframe_jump()
+					self.scene.frame_set(self.scene.frame_current + 1)
+					if self.scene.frame_current == endFrame:
+						break
 		
 		### This whole section is bullshit and dumb
-		for t in range(start,end+1):
+		"""for t in range(start,end+1):
 			self.scene.frame_set(t)
 			key = t * frame_len - frame_sub
 			print("Export Anim Frame "+str(t)+"/"+str(self.scene.frame_end+1))
@@ -1783,7 +1793,7 @@ class DaeExporter:
 
 						xform_cache[bone_name].append( (key,mtx) )
 
-		self.scene.frame_set(frame_orig)
+		self.scene.frame_set(frame_orig)"""
 
 		#export animation xml
 		for nid in xform_cache:
