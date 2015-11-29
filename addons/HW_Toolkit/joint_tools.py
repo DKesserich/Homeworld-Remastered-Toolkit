@@ -313,7 +313,7 @@ class MakeDockPath(bpy.types.Operator):
 				seg = bpy.data.objects.new("SEG["+str(x)+"]",None)
 				bpy.context.scene.objects.link(seg)
 				seg.parent = pathRoot
-				seg["Tolerance"] = 100
+				seg.empty_draw_type = "SPHERE"				
 				seg["Speed"] = 50
 				seg["Flags"] = "None"
 				seg.location = cursorLoc
