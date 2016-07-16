@@ -652,13 +652,14 @@ class DaeExporter:
 		#NTS: "float_values" is the container for the array of vertices - DL
 		float_values=""
 		#NTS: loops through all the vertices in the mesh and adds their x, y, and z coordinates to the float_values array -DL
-		for v in vertices:
-			 float_values+=" "+str(v.vertex.x)+" "+str(v.vertex.y)+" "+str(v.vertex.z)
+		for v in mesh.vertices:
+			print(v.co)
+			float_values+=" "+str(v.co[0])+" "+str(v.co[1])+" "+str(v.co[2])
 		#NTS: writes the entire float_vales array to a string - DL
-		self.writel(S_GEOM,4,'<float_array id="'+meshid+'-positions-array" count="'+str(len(vertices)*3)+'">'+float_values+'</float_array>')
+		self.writel(S_GEOM,4,'<float_array id="'+meshid+'-positions-array" count="'+str(len(mesh.vertices)*3)+'">'+float_values+'</float_array>')
 		self.writel(S_GEOM,4,'<technique_common>')
 		#NTS: Tells the software that is viewing the DAE how to parse the vertex array - DL
-		self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-positions-array" count="'+str(len(vertices))+'" stride="3">')
+		self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-positions-array" count="'+str(len(mesh.vertices))+'" stride="3">')
 		self.writel(S_GEOM,5,'<param name="X" type="float"/>')
 		self.writel(S_GEOM,5,'<param name="Y" type="float"/>')
 		self.writel(S_GEOM,5,'<param name="Z" type="float"/>')
@@ -670,17 +671,20 @@ class DaeExporter:
 
 		self.writel(S_GEOM,3,'<source id="'+meshid+'-normals">')
 		float_values=""
-		for v in vertices:
+		count=0
+		for v in mesh.loops:
 			 float_values+=" "+str(v.normal.x)+" "+str(v.normal.y)+" "+str(v.normal.z)
-		self.writel(S_GEOM,4,'<float_array id="'+meshid+'-normals-array" count="'+str(len(vertices)*3)+'">'+float_values+'</float_array>')
+			 count += 3
+		self.writel(S_GEOM,4,'<float_array id="'+meshid+'-normals-array" count="'+str(count)+'">'+float_values+'</float_array>')
 		self.writel(S_GEOM,4,'<technique_common>')
-		self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-normals-array" count="'+str(len(vertices))+'" stride="3">')
+		self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-normals-array" count="'+str(count/3)+'" stride="3">')
 		self.writel(S_GEOM,5,'<param name="X" type="float"/>')
 		self.writel(S_GEOM,5,'<param name="Y" type="float"/>')
 		self.writel(S_GEOM,5,'<param name="Z" type="float"/>')
 		self.writel(S_GEOM,4,'</accessor>')
 		self.writel(S_GEOM,4,'</technique_common>')
 		self.writel(S_GEOM,3,'</source>')
+		
 
 		if (has_tangents):
 			self.writel(S_GEOM,3,'<source id="'+meshid+'-tangents">')
@@ -715,20 +719,19 @@ class DaeExporter:
 
 		# UV Arrays
 
-		for uvi in range(uv_layer_count):
+		for uvi in mesh.uv_layers:
 
-			self.writel(S_GEOM,3,'<source id="'+meshid+'-texcoord-'+str(uvi)+'">')
+			self.writel(S_GEOM,3,'<source id="'+meshid+'-texcoord-'+str(uvi.name)+'">')
 			float_values=""
-			for v in vertices:
-				try:
-					float_values+=" "+str(v.uv[uvi].x)+" "+str(v.uv[uvi].y)
-				except:
-					# I don't understand this weird multi-uv-layer API, but with this it seems to works
-					float_values+=" 0 0 "
+			count=0
+			
+			for v in uvi.data:
+				float_values+=" "+str(v.uv.x)+" "+str(v.uv.y)+"\n"
+				count+=2
 
-			self.writel(S_GEOM,4,'<float_array id="'+meshid+'-texcoord-'+str(uvi)+'-array" count="'+str(len(vertices)*2)+'">'+float_values+'</float_array>')
+			self.writel(S_GEOM,4,'<float_array id="'+meshid+'-texcoord-'+str(uvi.name)+'-array" count="'+str(count)+'">'+float_values+'</float_array>')
 			self.writel(S_GEOM,4,'<technique_common>')
-			self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-texcoord-'+str(uvi)+'-array" count="'+str(len(vertices))+'" stride="2">')
+			self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-texcoord-'+str(uvi.name)+'-array" count="'+str(count/2)+'" stride="2">')
 			self.writel(S_GEOM,5,'<param name="S" type="float"/>')
 			self.writel(S_GEOM,5,'<param name="T" type="float"/>')
 			self.writel(S_GEOM,4,'</accessor>')
@@ -767,6 +770,8 @@ class DaeExporter:
 		for m in surface_indices:
 			indices = surface_indices[m]
 			mat = materials[m]
+			
+			
 
 			if (mat!=None):
 				#matref = self.new_id("trimat")
@@ -778,10 +783,13 @@ class DaeExporter:
 
 
 			self.writel(S_GEOM,4,'<input semantic="VERTEX" offset="0" source="#'+meshid+'-vertices"/>')
-			self.writel(S_GEOM,4,'<input semantic="NORMAL" offset="0" source="#'+meshid+'-normals"/>')
+			self.writel(S_GEOM,4,'<input semantic="NORMAL" offset="1" source="#'+meshid+'-normals"/>')
+			
+			offset=1
 
-			for uvi in range(uv_layer_count):
-				self.writel(S_GEOM,4,'<input semantic="TEXCOORD" offset="0" set="'+str(uvi)+'" source="#'+meshid+'-texcoord-'+str(uvi)+'"/>')
+			for uvi in range(0,len(mesh.uv_layers)):
+				self.writel(S_GEOM,4,'<input semantic="TEXCOORD" offset="'+str(offset)+'" set="'+str(uvi)+'" source="#'+meshid+'-texcoord-'+str(mesh.uv_layers[uvi].name)+'"/>')
+				
 
 			if (has_colors):
 				self.writel(S_GEOM,4,'<input semantic="COLOR" offset="0" source="#'+meshid+'-colors"/>')
@@ -789,11 +797,29 @@ class DaeExporter:
 				self.writel(S_GEOM,4,'<input semantic="TEXTANGENT" source="#'+meshid+'-tangents" offset="0"/>')
 				self.writel(S_GEOM,4,'<input semantic="TEXBINORMAL" source="#'+meshid+'-bitangents" offset="0"/>')
 
+				#TODO: Figure out a better solution for the Texcoord and Normal <p> data
 			if (triangulate):
 				int_values="<p>"
-				for p in indices:
-					for i in p:
-						int_values+=" "+str(i)
+				pVerts=[]
+				pInds=[]
+				for p in mesh.polygons:
+					for i in p.vertices:
+						pVerts.append(i)
+				for i in range(0,len(pVerts)):
+					pInds.append(i)
+				for p in mesh.polygons:
+					if (p.material_index==m):
+						for i in p.loop_indices:
+							int_values+=" "+str(pVerts[i])+" "+str(i)
+						"""for i in p.vertices:
+							int_values+=" "+str(pVerts[pVerts.index(i)])+" "+str(pInds[pVerts.index(i)])
+							pVerts[pVerts.index(i)]=-1"""
+										
+				"""for pv in range(0,len(pVerts)):
+					int_values+=" "+str(pVerts[pv])+" "+str(pv)
+					#if(offset > 1):
+					#	for o in range(offset-1):
+					#		int_values+=" "+str(pv)"""
 				int_values+=" </p>"
 				self.writel(S_GEOM,4,int_values)
 			else:
