@@ -1,4 +1,4 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
+ # ##### BEGIN GPL LICENSE BLOCK #####
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -1741,8 +1741,7 @@ class DaeExporter:
 					xform_cache[name].append( (self.scene.frame_current/self.scene.render.fps, node.matrix_local.copy()) )
 					#bpy.ops.screen.keyframe_jump()
 					self.scene.frame_set(self.scene.frame_current + 1)
-					if self.scene.frame_current == endFrame:
-						break
+					
 		
 		### This whole section is bullshit and dumb
 		"""for t in range(start,end+1):
