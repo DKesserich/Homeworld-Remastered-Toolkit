@@ -46,6 +46,98 @@ DAELibAnims = "{http://www.collada.org/2005/11/COLLADASchema}library_animations"
 DAEAnim = "{http://www.collada.org/2005/11/COLLADASchema}animation"
 DAEChannel = "{http://www.collada.org/2005/11/COLLADASchema}channel"
 
+def writeGeometry(geoName):
+    #Triangulate the Mesh
+    thisGeo = ET.SubElement(libGeometries,'geometry',name = geoName,id=geoName)
+    thisMesh = ET.SubElement(thisGeo,'mesh')
+    C.scene.objects.active = D.objects[geoName]
+    bpy.ops.object.modifier_add(type='TRIANGULATE')
+    bpy.ops.object.modifier_apply(modifier='Triangulate')
+    
+    mesh = D.objects[geoName].data
+    mesh.update(calc_tessface=True)
+    mesh.calc_normals_split()
+    
+    #Create the Vertices
+    vertices = []
+    for v in mesh.vertices:
+        vertices.append(v.co.x)
+        vertices.append(v.co.y)
+        vertices.append(v.co.z)    
+    meshPositions = ET.SubElement(thisMesh,'source',id=geoName+'-positions')
+    vertArray = ET.SubElement(meshPositions,'float_array',id=meshPositions.attrib['id']+'-array',count=str(len(vertices)))
+    vertices = str(vertices)    
+    vertArray.text = vertices.translate({ord(c):None for c in '[],'})
+    technique = ET.SubElement(meshPositions,'technique_common')
+    accessor = ET.SubElement(technique,'accessor',source='#'+vertArray.attrib['id'],count=str(len(mesh.vertices)),stride='3')
+    paramX = ET.SubElement(accessor,'param',name='X',type='float')
+    paramY = ET.SubElement(accessor,'param',name='Y',type='float')
+    paramZ = ET.SubElement(accessor,'param',name='Z',type='float')
+    
+    #Create the Normals
+    normals = []
+    for v in mesh.loops:
+        normals.append(v.normal.x)
+        normals.append(v.normal.y)
+        normals.append(v.normal.z)    
+    meshNormals = ET.SubElement(thisMesh,'source',id=geoName+'-normals')
+    normalArray = ET.SubElement(meshNormals,'float_array',id=meshNormals.attrib['id']+'-array',count = str(len(normals)))
+    normals = str(normals)
+    normalArray.text = normals.translate({ord(c):None for c in '[],'})
+    technique = ET.SubElement(meshNormals,'technique_common')
+    accessor = ET.SubElement(technique,'accessor',source='#'+normalArray.attrib['id'],count=str(len(mesh.loops)),stride='3')
+    paramX = ET.SubElement(accessor,'param',name='X',type='float')
+    paramY = ET.SubElement(accessor,'param',name='Y',type='float')
+    paramZ = ET.SubElement(accessor,'param',name='Z',type='float')
+    
+    #Create UVs
+    uvMaps = []
+    for uvi in mesh.uv_layers:
+        thisMap = ET.SubElement(thisMesh,'source',id=geoName+'-texcoord-'+uvi.name)
+        uvMaps.append(thisMap)
+        coords = []
+        for v in uvi.data:
+            coords.append(v.uv.x)
+            coords.append(v.uv.y)
+        array = ET.SubElement(thisMap,'float_array',id=thisMap.attrib['id']+'-array',count = str(len(coords)))
+        coords = str(coords)
+        array.text = coords.translate({ord(c):None for c in '[],'})
+        technique = ET.SubElement(thisMap,'technique_common')
+        accessor = ET.SubElement(technique,'accessor',source='#'+array.attrib['id'],count = str(len(uvi.data)),stride='2')
+        paramS = ET.SubElement(accessor,'param',name='S',type='float')
+        paramT = ET.SubElement(accessor,'param',name='T',type='float')
+    
+    #Tell it where the vertices are
+    vertElement = ET.SubElement(thisMesh,'vertices',id=geoName+'-vertices')
+    input = ET.SubElement(vertElement,'input',semantic='POSITION',source='#'+meshPositions.attrib['id'])
+    
+    #Make the Triangles
+    for m in range(0,len(mesh.materials)):
+        mat = mesh.materials[m]
+        polys = []
+        for p in mesh.polygons:
+            if p.material_index == m:
+                polys.append(p)
+        tris = ET.SubElement(thisMesh,'triangles',material = mat.name,count=str(len(polys)))
+        inputVert = ET.SubElement(tris,'input',semantic='VERTEX',offset='0',source='#'+vertElement.attrib['id'])
+        inputNormal = ET.SubElement(tris,'input',semantic='NORMAL',offset ='1',source = '#'+ meshNormals.attrib['id'])
+        for u in range(0,len(uvMaps)):
+            map = ET.SubElement(tris,'input',semantic = 'TEXCOORD',offset='1',set=str(u),source='#'+uvMaps[u].attrib['id'])
+        pElement = ET.SubElement(tris,'p')
+        pVerts = []
+        pInds = []
+        for p in mesh.polygons:
+            for i in p.vertices:
+                pVerts.append(i)
+        for p in mesh.polygons:
+            if (p.material_index==m):
+                for i in p.loop_indices:
+                    pInds.append(pVerts[i])
+                    pInds.append(i)
+        pInds = str(pInds)
+        pElement.text = pInds.translate({ord(c):None for c in '[],'})
+        
+    
 
 def writeNodes(parentNode,objectName):
     thisNode = ET.SubElement(parentNode,'node',name=objectName,id=objectName,sid=objectName)
@@ -63,6 +155,10 @@ def writeNodes(parentNode,objectName):
         matTechnique = ET.SubElement(bindMat,'technique_common')
         for m in D.objects[objectName].material_slots:
             matInstance = ET.SubElement(matTechnique,'instance_material',symbol = m.name,target='#'+m.name)
+        writeGeometry(objectName)
+    if D.objects[objectName].children is not None:
+        for c in D.objects[objectName].children:
+            writeNodes(thisNode,c.name)
     
 
 #Set up Collada Header Stuff
@@ -87,13 +183,15 @@ thisScene = ET.SubElement(libScenes,'visual_scene',id=C.scene.name+'-id',name=C.
 daeScene = ET.SubElement(root,'scene')
 visScene = ET.SubElement(daeScene,'instance_visual_scene',url='#'+thisScene.attrib["id"])
 
+libImages = ET.SubElement(root,'library_images')
+libMats = ET.SubElement(root,'library_materials')
+libEffects = ET.SubElement(root,'library_effects')
+libGeometries = ET.SubElement(root,'library_geometries')
+
 for ob in D.objects:
     if ob.parent is None:
         writeNodes(thisScene,ob.name)
-    else:
-        for n in thisScene.findall('node'):
-            if n.attrib['id'] == ob.parent.name:
-                writeNodes(n,ob.name)
+   
     
         
 
