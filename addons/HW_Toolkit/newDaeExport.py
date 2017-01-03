@@ -46,6 +46,111 @@ DAELibAnims = "{http://www.collada.org/2005/11/COLLADASchema}library_animations"
 DAEAnim = "{http://www.collada.org/2005/11/COLLADASchema}animation"
 DAEChannel = "{http://www.collada.org/2005/11/COLLADASchema}channel"
 
+def ColorToArrayToString(color):
+    colorArray = []
+    colorArray.append(color.r)
+    colorArray.append(color.g)
+    colorArray.append(color.b)
+    colorArray = str(colorArray)
+    colorArray = colorArray.translate({ord(c):None for c in '[],'})
+    return colorArray
+
+def writeTextures(texName):
+    thisImage = ET.SubElement(libImages,'image',id=texName+'-image',name=texName)
+    init = ET.SubElement(thisImage,'init_from')
+    init.text = D.textures[texName].image.filepath
+
+def writeMaterials(matName):
+    thisMaterial = ET.SubElement(libMats,'material',id=matName,name=matName)
+    instance = ET.SubElement(thisMaterial,'instance_effect',url='#'+matName+'-fx')
+    
+    thisEffect = ET.SubElement(libEffects,'effect',id=matName+'-fx',name=matName)
+    profile = ET.SubElement(thisEffect,'profile_COMMON')
+    technique = ET.SubElement(profile,'technique',sid='standard')
+    shtype = ET.SubElement(technique,D.materials[matName].specular_shader)
+    
+    #Get Textures
+    diffuse_tex = []
+    specular_tex = []
+    emission_tex = []
+    normal_tex = []
+    for t in D.materials[matName].texture_slots:
+        if t is not None:
+            if t.use_map_color_diffuse:
+                diffuse_tex.append(t)
+            if t.use_map_specular:
+                specular_tex.append(t)
+            if t.use_map_emission:
+                emission_tex.append(t)
+            if t.use_map_normal:
+                normal_tex.append(t)
+    
+    #Emission Element
+    emit = ET.SubElement(shtype,'emission')
+    color = ET.SubElement(emit,'color',sid='emission')   
+    color.text = ColorToArrayToString(D.materials[matName].diffuse_color)
+    if (len(emission_tex) > 0):
+        for t in emission_tex:
+            texture = ET.SubElement(emit,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
+            extra = ET.SubElement(texture,'extra')
+            technique = ET.SubElement(extra,'technique',profile='MAYA')
+            wrapU = ET.SubElement(technique,'wrapU',sid='wrapU0')
+            wrapU.text='TRUE'
+            wrapV = ET.SubElement(technique,'wrapV',sid='wrapV0')
+            wrapV.text='TRUE'
+            blend = ET.SubElement(technique,'blend_mode')
+            blend.text = t.blend_type
+    
+    #Ambient
+    ambient = ET.SubElement(shtype,'ambient')
+    color = ET.SubElement(ambient,'color',sid='ambient')
+    color.text = ColorToArrayToString(D.worlds['World'].ambient_color)+' '+str(D.materials[matName].ambient)
+    
+    #Diffuse
+    diffuse = ET.SubElement(shtype,'diffuse')
+    color = ET.SubElement(diffuse,'color',sid='diffuse')
+    color.text = ColorToArrayToString(D.materials[matName].diffuse_color)
+    if (len(diffuse_tex)>0):
+        for t in diffuse_tex:
+            texture = ET.SubElement(diffuse,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
+            extra = ET.SubElement(texture,'extra')
+            technique = ET.SubElement(extra,'technique',profile='MAYA')
+            wrapU = ET.SubElement(technique,'wrapU',sid='wrapU0')
+            wrapU.text='TRUE'
+            wrapV = ET.SubElement(technique,'wrapV',sid='wrapV0')
+            wrapV.text='TRUE'
+            blend = ET.SubElement(technique,'blend_mode')
+            blend.text = t.blend_type
+    
+    #Specular
+    specular = ET.SubElement(shtype,'specular')
+    color = ET.SubElement(specular,'color',sid='specular')
+    color.text = ColorToArrayToString(D.materials[matName].specular_color)
+    if (len(specular_tex)>0):
+        for t in specular_tex:
+            texture = ET.SubElement(specular,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
+            extra = ET.SubElement(texture,'extra')
+            technique = ET.SubElement(extra,'technique',profile='MAYA')
+            wrapU = ET.SubElement(technique,'wrapU',sid='wrapU0')
+            wrapU.text="TRUE"
+            wrapV = ET.SubElement(technique,'wrapV',sid='wrapV0')
+            wrapV.text = 'TRUE'
+            blend = ET.SubElement(technique,'blend_mode')
+            blend.text = t.blend_type
+    shininess = ET.SubElement(shtype,'shininess')
+    shine = ET.SubElement(shininess,'float',sid='shininess')
+    shine.text = str(D.materials[matName].specular_hardness)
+    
+    #Reflective
+    reflective = ET.SubElement(shtype,'reflective')
+    color = ET.SubElement(reflective,'color')
+    color.text = ColorToArrayToString(D.materials[matName].mirror_color)
+    
+    #Transparency
+    transparency = ET.SubElement(shtype,'transparency')
+    float = ET.SubElement(transparency,'float',sid='transparency')
+    float.text = str(D.materials[matName].alpha)
+
 def writeGeometry(geoName):
     #Triangulate the Mesh
     thisGeo = ET.SubElement(libGeometries,'geometry',name = geoName,id=geoName)
@@ -192,7 +297,11 @@ for ob in D.objects:
     if ob.parent is None:
         writeNodes(thisScene,ob.name)
    
-    
+for mat in D.materials:
+    writeMaterials(mat.name)   
+
+for tex in D.textures:
+    writeTextures(tex.name)
         
 
 doc = ET.ElementTree(root)
