@@ -242,8 +242,102 @@ def writeGeometry(geoName):
         pInds = str(pInds)
         pElement.text = pInds.translate({ord(c):None for c in '[],'})
         
+def writeAnims(objName):
+    thisAnim = ET.SubElement(libAnimations,'animation',id=objName+'-anim',name=objName)
     
-
+    for curve in D.objects[objName].animation_data.action.fcurves:
+        thisCurve = ET.SubElement(libAnimations,'animation')
+        
+        
+        baseID = None
+        
+        if curve.data_path == 'location':
+            baseID = objName+'-translate'
+            if curve.array_index == 0:
+                baseID = baseID+'.X'
+            if curve.array_index == 1:
+                baseID = baseID+'.Y'
+            if curve.array_index == 2:
+                baseID = baseID+'.Z'
+        if curve.data_path == 'rotation_euler':
+            baseID = objName+'-rotate'
+            if curve.array_index == 0:
+                baseID = baseID+'X.ANGLE'
+            if curve.array_index == 1:
+                baseID = baseID+'Y.ANGLE'
+            if curve.array_index == 2:
+                baseID = baseID+'Z.ANGLE'
+        
+        keys = []
+        values = []
+        interp = []
+        intan = []
+        outtan = []
+        for k in curve.keyframe_points:
+            keys.append(k.co.x/C.scene.render.fps)
+            if curve.data_path == 'location':
+                values.append(k.co.y)
+            if curve.data_path == 'rotation_euler':
+                values.append(math.degrees(k.co.y))
+            interp.append(k.interpolation)
+            intan.append(k.handle_left.x)
+            intan.append(k.handle_left.y)
+            outtan.append(k.handle_right.x)
+            outtan.append(k.handle_right.y)
+        
+        #Sampler
+        sampler = ET.SubElement(thisCurve,'sampler',id=baseID)
+        
+        #Create the input values (keyframes)
+        source = ET.SubElement(thisCurve,'source',id=baseID+'-input')
+        input = ET.SubElement(sampler,'input',semantic = 'INPUT',source='#'+source.attrib['id'])
+        array = ET.SubElement(source,'float_array',id=baseID+'-input-array',count = str(len(keys)))
+        array.text = str(keys).translate({ord(c):None for c in '[],'})
+        technique = ET.SubElement(source,'technique_common')
+        accessor = ET.SubElement(technique,'accessor',source='#'+array.attrib['id'],count = array.attrib['count'],stride = '1')
+        param = ET.SubElement(accessor,'param',type='float')
+        
+        #Create the output values (actual values)
+        source = ET.SubElement(thisCurve,'source',id=baseID+'-output')
+        input = ET.SubElement(sampler,'input',semantic = 'OUTPUT',source='#'+source.attrib['id'])
+        array = ET.SubElement(source,'float_array',id=baseID+'-output-array',count = str(len(values)))
+        array.text = str(values).translate({ord(c):None for c in '[],'})
+        technique = ET.SubElement(source,'technique_common')
+        accessor = ET.SubElement(technique,'accessor',source='#'+array.attrib['id'],count = array.attrib['count'],stride = '1')
+        param = ET.SubElement(accessor,'param',type='float')
+        
+        #Create the interpolations
+        source = ET.SubElement(thisCurve,'source',id=baseID+'-interpolation')
+        input = ET.SubElement(sampler,'input',semantic='INTERPOLATION',source='#'+source.attrib['id'])
+        array = ET.SubElement(source,'Name_array',id=baseID+'-interpolation-array',count = str(len(interp)))
+        array.text = str(interp).translate({ord(c):None for c in '[],\''})
+        technique = ET.SubElement(source,'technique_common')
+        accessor = ET.SubElement(technique,'accessor',source='#'+array.attrib['id'],count = array.attrib['count'],stride='1')
+        param = ET.SubElement(accessor,'param',type='name')
+        
+        #Intangents for Bezier Curves
+        source = ET.SubElement(thisCurve,'source',id=baseID+'-intan')
+        input = ET.SubElement(sampler,'input',semantic='IN_TANGENT',source='#'+source.attrib['id'])
+        array = ET.SubElement(source,'float_array',id=baseID+'-intan-array',count = str(len(intan)))
+        array.text = str(intan).translate({ord(c):None for c in '[],'})
+        technique = ET.SubElement(source,'technique_common')
+        accessor = ET.SubElement(technique,'accessor',source = '#'+array.attrib['id'],count = str(len(intan)/2),stride = '2')
+        paramA = ET.SubElement(accessor,'param',type='float')
+        paramB = ET.SubElement(accessor,'param',type='float')
+        
+        #Outtangents for Bezier Curves
+        source = ET.SubElement(thisCurve,'source',id=baseID+'-outtan')
+        input = ET.SubElement(sampler,'input',semantic='OUT_TANGENT',source='#'+source.attrib['id'])
+        array = ET.SubElement(source,'float_array',id=baseID+'-outtan-array',count = str(len(outtan)))
+        array.text = str(outtan).translate({ord(c):None for c in '[],'})
+        technique = ET.SubElement(source,'technique_common')
+        accessor = ET.SubElement(technique,'accessor',source='#'+array.attrib['id'],count = str(len(outtan)/2),stride = '2')
+        paramA = ET.SubElement(accessor,'param',type='float')
+        paramB = ET.SubElement(accessor,'param',type='float')
+        
+        channel = ET.SubElement(thisCurve,'channel',source='#'+baseID,target=baseID.split('-')[0]+'/'+baseID.split('-')[1])
+        
+        
 def writeNodes(parentNode,objectName):
     thisNode = ET.SubElement(parentNode,'node',name=objectName,id=objectName,sid=objectName)
     thisPosition = ET.SubElement(thisNode,'translate',sid='translate')
@@ -254,6 +348,8 @@ def writeNodes(parentNode,objectName):
     rotY.text = '0 1 0 '+str(math.degrees(D.objects[objectName].rotation_euler.y))
     rotX = ET.SubElement(thisNode,'rotate',sid='rotateX')
     rotX.text = '1 0 0 '+str(math.degrees(D.objects[objectName].rotation_euler.x))
+    if D.objects[objectName].animation_data is not None:
+        writeAnims(objectName)
     if D.objects[objectName].type == 'MESH':
         geoInstance = ET.SubElement(thisNode,'instance_geometry',url='#'+objectName)
         bindMat = ET.SubElement(geoInstance,'bind_material')
@@ -264,7 +360,19 @@ def writeNodes(parentNode,objectName):
     if D.objects[objectName].children is not None:
         for c in D.objects[objectName].children:
             writeNodes(thisNode,c.name)
-    
+
+def prettify(element, indent='  '):
+    queue = [(0, element)]  # (level, element)
+    while queue:
+        level, element = queue.pop(0)
+        children = [(level + 1, child) for child in list(element)]
+        if children:
+            element.text = '\n' + indent * (level+1)  # for child open
+        if queue:
+            element.tail = '\n' + indent * queue[0][0]  # for sibling open
+        else:
+            element.tail = '\n' + indent * (level-1)  # for parent close
+        queue[0:0] = children  # prepend so children come before siblings  
 
 #Set up Collada Header Stuff
 root = ET.Element('COLLADA',version='1.4.1',xmlns = 'http://www.collada.org/2005/11/COLLADASchema')
@@ -292,6 +400,7 @@ libImages = ET.SubElement(root,'library_images')
 libMats = ET.SubElement(root,'library_materials')
 libEffects = ET.SubElement(root,'library_effects')
 libGeometries = ET.SubElement(root,'library_geometries')
+libAnimations = ET.SubElement(root,'library_animations')
 
 for ob in D.objects:
     if ob.parent is None:
@@ -303,6 +412,6 @@ for mat in D.materials:
 for tex in D.textures:
     writeTextures(tex.name)
         
-
+prettify(root)
 doc = ET.ElementTree(root)
-doc.write('C:\\Users\\Fafhrd\\Desktop\\Test.dae',encoding = 'UTF-8',xml_declaration=True)
+doc.write('C:\\Users\\Fafhrd\\Desktop\\Test.dae',encoding = 'utf-8',xml_declaration=True)
