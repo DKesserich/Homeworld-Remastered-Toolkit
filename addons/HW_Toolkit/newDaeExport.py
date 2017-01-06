@@ -67,7 +67,7 @@ def writeMaterials(matName):
     thisEffect = ET.SubElement(libEffects,'effect',id=matName+'-fx',name=matName)
     profile = ET.SubElement(thisEffect,'profile_COMMON')
     technique = ET.SubElement(profile,'technique',sid='standard')
-    shtype = ET.SubElement(technique,D.materials[matName].specular_shader)
+    shtype = ET.SubElement(technique,D.materials[matName].specular_shader.lower())
     
     #Get Textures
     diffuse_tex = []
@@ -108,8 +108,9 @@ def writeMaterials(matName):
     
     #Diffuse
     diffuse = ET.SubElement(shtype,'diffuse')
-    color = ET.SubElement(diffuse,'color',sid='diffuse')
-    color.text = ColorToArrayToString(D.materials[matName].diffuse_color)
+    if (len(diffuse_tex)==0):
+        color = ET.SubElement(diffuse,'color',sid='diffuse')
+        color.text = ColorToArrayToString(D.materials[matName].diffuse_color)
     if (len(diffuse_tex)>0):
         for t in diffuse_tex:
             texture = ET.SubElement(diffuse,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
@@ -217,37 +218,58 @@ def writeGeometry(geoName):
     input = ET.SubElement(vertElement,'input',semantic='POSITION',source='#'+meshPositions.attrib['id'])
     
     #Make the Triangles
-    for m in range(0,len(mesh.materials)):
-        mat = mesh.materials[m]
+    if len(mesh.materials)>0:
+        for m in range(0,len(mesh.materials)):
+            mat = mesh.materials[m]
+            polys = []
+            for p in mesh.polygons:
+                if p.material_index == m:
+                    polys.append(p)
+            tris = ET.SubElement(thisMesh,'triangles',material = mat.name,count=str(len(polys)))
+            inputVert = ET.SubElement(tris,'input',semantic='VERTEX',offset='0',source='#'+vertElement.attrib['id'])
+            inputNormal = ET.SubElement(tris,'input',semantic='NORMAL',offset ='1',source = '#'+ meshNormals.attrib['id'])
+            for u in range(0,len(uvMaps)):
+                map = ET.SubElement(tris,'input',semantic = 'TEXCOORD',offset='1',set=str(u),source='#'+uvMaps[u].attrib['id'])
+            pElement = ET.SubElement(tris,'p')
+            pVerts = []
+            pInds = []
+            for p in mesh.polygons:
+                for i in p.vertices:
+                    pVerts.append(i)
+            for p in mesh.polygons:
+                if (p.material_index==m):
+                    for i in p.loop_indices:
+                        pInds.append(pVerts[i])
+                        pInds.append(i)
+            pInds = str(pInds)
+            pElement.text = pInds.translate({ord(c):None for c in '[],'})
+    else:
         polys = []
         for p in mesh.polygons:
-            if p.material_index == m:
-                polys.append(p)
-        tris = ET.SubElement(thisMesh,'triangles',material = mat.name,count=str(len(polys)))
+            polys.append(p)
+        tris = ET.SubElement(thisMesh,'triangles',count=str(len(polys)))
         inputVert = ET.SubElement(tris,'input',semantic='VERTEX',offset='0',source='#'+vertElement.attrib['id'])
-        inputNormal = ET.SubElement(tris,'input',semantic='NORMAL',offset ='1',source = '#'+ meshNormals.attrib['id'])
-        for u in range(0,len(uvMaps)):
-            map = ET.SubElement(tris,'input',semantic = 'TEXCOORD',offset='1',set=str(u),source='#'+uvMaps[u].attrib['id'])
+        inputNormal = ET.SubElement(tris,'input',semantic='NORMAL',offset ='1',source = '#'+ meshNormals.attrib['id'])        
         pElement = ET.SubElement(tris,'p')
         pVerts = []
         pInds = []
         for p in mesh.polygons:
             for i in p.vertices:
                 pVerts.append(i)
-        for p in mesh.polygons:
-            if (p.material_index==m):
-                for i in p.loop_indices:
-                    pInds.append(pVerts[i])
-                    pInds.append(i)
+        for p in polys:
+            for i in p.loop_indices:
+                pInds.append(pVerts[i])
+                pInds.append(i)
         pInds = str(pInds)
         pElement.text = pInds.translate({ord(c):None for c in '[],'})
+        
         
 def writeAnims(objName):
     thisAnim = ET.SubElement(libAnimations,'animation',id=objName+'-anim',name=objName)
     
     for curve in D.objects[objName].animation_data.action.fcurves:
         thisCurve = ET.SubElement(libAnimations,'animation')
-        
+        print(curve.data_path+" "+str(curve.array_index))
         
         baseID = None
         
@@ -267,6 +289,8 @@ def writeAnims(objName):
                 baseID = baseID+'Y.ANGLE'
             if curve.array_index == 2:
                 baseID = baseID+'Z.ANGLE'
+        if curve.data_path == 'scale':
+            continue
         
         keys = []
         values = []
@@ -339,6 +363,7 @@ def writeAnims(objName):
         
         
 def writeNodes(parentNode,objectName):
+    print("Writing Node for "+objectName)
     thisNode = ET.SubElement(parentNode,'node',name=objectName,id=objectName,sid=objectName)
     thisPosition = ET.SubElement(thisNode,'translate',sid='translate')
     thisPosition.text = str(D.objects[objectName].location.x)+' '+str(D.objects[objectName].location.y)+' '+str(D.objects[objectName].location.z)
@@ -348,7 +373,7 @@ def writeNodes(parentNode,objectName):
     rotY.text = '0 1 0 '+str(math.degrees(D.objects[objectName].rotation_euler.y))
     rotX = ET.SubElement(thisNode,'rotate',sid='rotateX')
     rotX.text = '1 0 0 '+str(math.degrees(D.objects[objectName].rotation_euler.x))
-    if D.objects[objectName].animation_data is not None:
+    if D.objects[objectName].animation_data.action is not None:
         writeAnims(objectName)
     if D.objects[objectName].type == 'MESH':
         geoInstance = ET.SubElement(thisNode,'instance_geometry',url='#'+objectName)
@@ -414,4 +439,4 @@ for tex in D.textures:
         
 prettify(root)
 doc = ET.ElementTree(root)
-doc.write('C:\\Users\\Fafhrd\\Desktop\\Test.dae',encoding = 'utf-8',xml_declaration=True)
+doc.write('F:\\mymod\\Test.dae',encoding = 'utf-8',xml_declaration=True)
