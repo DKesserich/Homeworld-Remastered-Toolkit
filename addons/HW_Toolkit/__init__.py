@@ -20,7 +20,7 @@
 
 bl_info = {
     "name": "Homeworld Remastered Toolkit",
-    "author": "Juan Linietsky, David Lejeune, Dominic Cassidy",
+    "author": "David Lejeune, Dominic Cassidy",
     "version": "112",
     "blender": (2, 5, 8),
     "api": 38691,
@@ -35,8 +35,8 @@ bl_info = {
 
 if "bpy" in locals():
 	import imp
-	if "export_dae" in locals():
-		imp.reload(export_dae)
+	if "newDaeExport" in locals():
+		imp.reload(newDaeExport)
 	
 
 import math
@@ -78,77 +78,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
             default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH','CURVE'},
             )
 
-    use_export_selected = BoolProperty(
-            name="Selected Objects",
-            description="Export only selected objects (and visible in active layers if that applies).",
-            default=False,
-            )
-    use_mesh_modifiers = BoolProperty(
-            name="Apply Modifiers",
-            description="Apply modifiers to mesh objects (on a copy!).",
-            default=True,
-            )
-    use_tangent_arrays = BoolProperty(
-	    name="Tangent Arrays",
-	    description="Export Tangent and Binormal arrays (for normalmapping).",
-	    default=False,
-	    )
-    use_triangles = BoolProperty(
-	    name="Triangulate",
-	    description="Export Triangles instead of Polygons.",
-	    default=True,
-	    )
-
-    use_copy_images = BoolProperty(
-            name="Copy Images",
-            description="Copy Images (create images/ subfolder)",
-            default=False,
-            )
-    use_active_layers = BoolProperty(
-            name="Active Layers",
-            description="Export only objects on the active layers.",
-            default=True,
-            )
-    use_exclude_ctrl_bones = BoolProperty(
-            name="Exclude Control Bones",
-            description="Exclude skeleton bones with names that begin with 'ctrl'.",
-            default=True,
-            )
-    use_anim = BoolProperty(
-            name="Export Animation",
-            description="Export keyframe animation",
-            default=True,
-            )
-    use_anim_action_all = BoolProperty(
-            name="All Actions",
-            description=("Export all actions for the first armature found in separate DAE files"),
-            default=False,
-            )
-    use_anim_skip_noexp = BoolProperty(
-	    name="Skip (-noexp) Actions",
-	    description="Skip exporting of actions whose name end in (-noexp). Useful to skip control animations.",
-	    default=True,
-	    )
-    use_anim_optimize = BoolProperty(
-            name="Optimize Keyframes",
-            description="Remove double keyframes",
-            default=True,
-            )
-
-    anim_optimize_precision = FloatProperty(
-            name="Precision",
-            description=("Tolerence for comparing double keyframes "
-                        "(higher for greater accuracy)"),
-            min=1, max=16,
-            soft_min=1, soft_max=16,
-            default=6.0,
-            )
-
-    use_metadata = BoolProperty(
-            name="Use Metadata",
-            default=True,
-            options={'HIDDEN'},
-            )
+    
 
     @property
     def check_extension(self):
@@ -189,23 +119,27 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
                                             "xna_validate",
                                             ))
 
-        from . import export_dae
-        return export_dae.save(self, context, **keywords)
-
+        from . import newDaeExport
+        return newDaeExport.save(self.filepath)
 
 
 def menu_func(self, context):
-    self.layout.operator(ExportDAE.bl_idname, text="Better Collada - HW (.dae)")
+    self.layout.operator(ExportDAE.bl_idname, text="HWRM Collada (.dae)")
+
 
 def register():
-    bpy.utils.register_module(__name__)
-
-    bpy.types.INFO_MT_file_export.append(menu_func)
-
+	bpy.utils.register_module(__name__)
+	
+	bpy.types.INFO_MT_file_export.append(menu_func)
+	
+	
 def unregister():
-    bpy.utils.unregister_module(__name__)
-
-    bpy.types.INFO_MT_file_export.remove(menu_func)
+	
+	bpy.utils.unregister_module(__name__)
+	
+	bpy.types.INFO_MT_file_export.remove(menu_func)
+	
 
 if __name__ == "__main__":
     register()
+
