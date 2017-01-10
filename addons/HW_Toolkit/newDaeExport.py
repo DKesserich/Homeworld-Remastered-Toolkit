@@ -56,19 +56,19 @@ def ColorToArrayToString(color):
     colorArray = colorArray.translate({ord(c):None for c in '[],'})
     return colorArray
 
-def writeTextures(texName):
-    thisImage = ET.SubElement(libImages,'image',id=texName+'-image',name=texName)
-    init = ET.SubElement(thisImage,'init_from')
+def writeTextures(dae,libImages,texName):
+    thisImage = dae.ET.SubElement(libImages,'image',id=texName+'-image',name=texName)
+    init = dae.ET.SubElement(thisImage,'init_from')
     init.text = D.textures[texName].image.filepath
 
-def writeMaterials(matName):
-    thisMaterial = ET.SubElement(libMats,'material',id=matName,name=matName)
-    instance = ET.SubElement(thisMaterial,'instance_effect',url='#'+matName+'-fx')
+def writeMaterials(dae,libMats,libEffects,matName):
+    thisMaterial = dae.ET.SubElement(libMats,'material',id=matName,name=matName)
+    instance = dae.ET.SubElement(thisMaterial,'instance_effect',url='#'+matName+'-fx')
     
-    thisEffect = ET.SubElement(libEffects,'effect',id=matName+'-fx',name=matName)
-    profile = ET.SubElement(thisEffect,'profile_COMMON')
-    technique = ET.SubElement(profile,'technique',sid='standard')
-    shtype = ET.SubElement(technique,D.materials[matName].specular_shader.lower())
+    thisEffect = dae.ET.SubElement(libEffects,'effect',id=matName+'-fx',name=matName)
+    profile = dae.ET.SubElement(thisEffect,'profile_COMMON')
+    technique = dae.ET.SubElement(profile,'technique',sid='standard')
+    shtype = dae.ET.SubElement(technique,D.materials[matName].specular_shader.lower())
     
     #Get Textures
     diffuse_tex = []
@@ -87,70 +87,70 @@ def writeMaterials(matName):
                 normal_tex.append(t)
     
     #Emission Element
-    emit = ET.SubElement(shtype,'emission')
-    color = ET.SubElement(emit,'color',sid='emission')   
+    emit = dae.ET.SubElement(shtype,'emission')
+    color = dae.ET.SubElement(emit,'color',sid='emission')   
     color.text = ColorToArrayToString(D.materials[matName].diffuse_color)
     if (len(emission_tex) > 0):
         for t in emission_tex:
-            texture = ET.SubElement(emit,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
-            extra = ET.SubElement(texture,'extra')
-            technique = ET.SubElement(extra,'technique',profile='MAYA')
-            wrapU = ET.SubElement(technique,'wrapU',sid='wrapU0')
+            texture = dae.ET.SubElement(emit,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
+            extra = dae.ET.SubElement(texture,'extra')
+            technique = dae.ET.SubElement(extra,'technique',profile='MAYA')
+            wrapU = dae.ET.SubElement(technique,'wrapU',sid='wrapU0')
             wrapU.text='TRUE'
-            wrapV = ET.SubElement(technique,'wrapV',sid='wrapV0')
+            wrapV = dae.ET.SubElement(technique,'wrapV',sid='wrapV0')
             wrapV.text='TRUE'
-            blend = ET.SubElement(technique,'blend_mode')
+            blend = dae.ET.SubElement(technique,'blend_mode')
             blend.text = t.blend_type
     
     #Ambient
-    ambient = ET.SubElement(shtype,'ambient')
-    color = ET.SubElement(ambient,'color',sid='ambient')
+    ambient = dae.ET.SubElement(shtype,'ambient')
+    color = dae.ET.SubElement(ambient,'color',sid='ambient')
     color.text = ColorToArrayToString(D.worlds['World'].ambient_color)+' '+str(D.materials[matName].ambient)
     
     #Diffuse
-    diffuse = ET.SubElement(shtype,'diffuse')
+    diffuse = dae.ET.SubElement(shtype,'diffuse')
     if (len(diffuse_tex)==0):
-        color = ET.SubElement(diffuse,'color',sid='diffuse')
+        color = dae.ET.SubElement(diffuse,'color',sid='diffuse')
         color.text = ColorToArrayToString(D.materials[matName].diffuse_color)
     if (len(diffuse_tex)>0):
         for t in diffuse_tex:
-            texture = ET.SubElement(diffuse,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
-            extra = ET.SubElement(texture,'extra')
-            technique = ET.SubElement(extra,'technique',profile='MAYA')
-            wrapU = ET.SubElement(technique,'wrapU',sid='wrapU0')
+            texture = dae.ET.SubElement(diffuse,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
+            extra = dae.ET.SubElement(texture,'extra')
+            technique = dae.ET.SubElement(extra,'technique',profile='MAYA')
+            wrapU = dae.ET.SubElement(technique,'wrapU',sid='wrapU0')
             wrapU.text='TRUE'
-            wrapV = ET.SubElement(technique,'wrapV',sid='wrapV0')
+            wrapV = dae.ET.SubElement(technique,'wrapV',sid='wrapV0')
             wrapV.text='TRUE'
-            blend = ET.SubElement(technique,'blend_mode')
+            blend = dae.ET.SubElement(technique,'blend_mode')
             blend.text = t.blend_type
     
     #Specular
-    specular = ET.SubElement(shtype,'specular')
-    color = ET.SubElement(specular,'color',sid='specular')
+    specular = dae.ET.SubElement(shtype,'specular')
+    color = dae.ET.SubElement(specular,'color',sid='specular')
     color.text = ColorToArrayToString(D.materials[matName].specular_color)
     if (len(specular_tex)>0):
         for t in specular_tex:
-            texture = ET.SubElement(specular,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
-            extra = ET.SubElement(texture,'extra')
-            technique = ET.SubElement(extra,'technique',profile='MAYA')
-            wrapU = ET.SubElement(technique,'wrapU',sid='wrapU0')
+            texture = dae.ET.SubElement(specular,'texture',texture=t.name+'-image',texcoord='CHANNEL0')
+            extra = dae.ET.SubElement(texture,'extra')
+            technique = dae.ET.SubElement(extra,'technique',profile='MAYA')
+            wrapU = dae.ET.SubElement(technique,'wrapU',sid='wrapU0')
             wrapU.text="TRUE"
-            wrapV = ET.SubElement(technique,'wrapV',sid='wrapV0')
+            wrapV = dae.ET.SubElement(technique,'wrapV',sid='wrapV0')
             wrapV.text = 'TRUE'
-            blend = ET.SubElement(technique,'blend_mode')
+            blend = dae.ET.SubElement(technique,'blend_mode')
             blend.text = t.blend_type
-    shininess = ET.SubElement(shtype,'shininess')
-    shine = ET.SubElement(shininess,'float',sid='shininess')
+    shininess = dae.ET.SubElement(shtype,'shininess')
+    shine = dae.ET.SubElement(shininess,'float',sid='shininess')
     shine.text = str(D.materials[matName].specular_hardness)
     
     #Reflective
-    reflective = ET.SubElement(shtype,'reflective')
-    color = ET.SubElement(reflective,'color')
+    reflective = dae.ET.SubElement(shtype,'reflective')
+    color = dae.ET.SubElement(reflective,'color')
     color.text = ColorToArrayToString(D.materials[matName].mirror_color)
     
     #Transparency
-    transparency = ET.SubElement(shtype,'transparency')
-    float = ET.SubElement(transparency,'float',sid='transparency')
+    transparency = dae.ET.SubElement(shtype,'transparency')
+    float = dae.ET.SubElement(transparency,'float',sid='transparency')
     float.text = str(D.materials[matName].alpha)
 
 def writeGeometry(dae,libgeo,geoName):
@@ -435,7 +435,8 @@ def writeNodes(dae,parentNode,libgeo,libanims,objectName):
             thisNode.set('id',newName)
             thisNode.set('name',newName)
             thisNode.set('sid',newName)
-            
+     
+    #Parse Seg Nodes
     if 'SEG[' in objectName:
         segNode = D.objects[objectName]
         if hasattr(segNode,'["Speed"]'):
@@ -519,10 +520,10 @@ class HwDAE:
                 writeNodes(self,thisScene,libGeometries,libAnimations,ob.name)
    
         for mat in D.materials:
-            writeMaterials(mat.name)   
+            writeMaterials(self,libMats,libEffects,mat.name)   
 
         for tex in D.textures:
-            writeTextures(tex.name)
+            writeTextures(self,libImages,tex.name)
         
         prettify(root)
         doc = self.ET.ElementTree(root)
