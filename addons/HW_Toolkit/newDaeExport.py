@@ -373,13 +373,13 @@ def writeNodes(dae,parentNode,libgeo,libanims,objectName):
     print("Writing Node for "+objectName)
     thisNode = dae.ET.SubElement(parentNode,'node',name=objectName,id=objectName,sid=objectName)
     thisPosition = dae.ET.SubElement(thisNode,'translate',sid='translate')
-    thisPosition.text = str(D.objects[objectName].location.x)+' '+str(D.objects[objectName].location.y)+' '+str(D.objects[objectName].location.z)
+    thisPosition.text = str(D.objects[objectName].matrix_local.translation.x)+' '+str(D.objects[objectName].matrix_local.translation.y)+' '+str(D.objects[objectName].matrix_local.translation.z)
     rotZ = dae.ET.SubElement(thisNode,'rotate',sid='rotateZ')
-    rotZ.text = '0 0 1 '+str(math.degrees(D.objects[objectName].rotation_euler.z))
+    rotZ.text = '0 0 1 '+str(math.degrees(D.objects[objectName].matrix_local.to_euler().z))
     rotY = dae.ET.SubElement(thisNode,'rotate',sid='rotateY')
-    rotY.text = '0 1 0 '+str(math.degrees(D.objects[objectName].rotation_euler.y))
+    rotY.text = '0 1 0 '+str(math.degrees(D.objects[objectName].matrix_local.to_euler().y))
     rotX = dae.ET.SubElement(thisNode,'rotate',sid='rotateX')
-    rotX.text = '1 0 0 '+str(math.degrees(D.objects[objectName].rotation_euler.x))
+    rotX.text = '1 0 0 '+str(math.degrees(D.objects[objectName].matrix_local.to_euler().x))
     if D.objects[objectName].animation_data is not None:
         writeAnims(dae,libanims,objectName)
     if D.objects[objectName].type == 'MESH':
