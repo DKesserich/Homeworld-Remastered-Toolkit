@@ -523,7 +523,8 @@ class HwDAE:
             writeMaterials(self,libMats,libEffects,mat.name)   
 
         for tex in D.textures:
-            writeTextures(self,libImages,tex.name)
+            if hasattr(tex,'image'):
+                writeTextures(self,libImages,tex.name)
         
         prettify(root)
         doc = self.ET.ElementTree(root)
