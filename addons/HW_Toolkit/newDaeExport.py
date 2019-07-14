@@ -1,7 +1,6 @@
 # Updated:
-#  Background light export  [x]
-#  MAT[xx]_PARAM[yy] export [o]
-# Dom2 21-SEP-2018
+#  Converts all materials to phong on export
+# Dom2 14-JUL-2019
 
 import bpy
 import math
@@ -580,8 +579,10 @@ class HwDAE:
         for ob in D.objects:
             if ob.parent is None:
                 writeNodes(self,thisScene,libGeometries,libAnimations,ob.name)
-   
+    
         for mat in D.materials:
+            #Set Phong
+            D.materials[mat.name].specular_shader = "PHONG"
             writeMaterials(self,libMats,libEffects,mat.name)   
 
         for tex in D.textures:
