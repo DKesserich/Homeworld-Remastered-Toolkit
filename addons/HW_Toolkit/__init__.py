@@ -22,7 +22,7 @@ bl_info = {
     "name": "Homeworld Remastered Toolkit",
     "author": "David Lejeune, Dominic Cassidy & Dom2",
     "version": "200",
-    "blender": (2, 5, 8),
+    "blender": (2, 80, 0),
     "api": 38691,
     "location": "File > Import-Export",
     "description": ("A combined toolkit for creating content for Homeworld Remastered. Includes a modified version of the Better Collada Exporter, new create options to automate Joint creation and a DAE importer."),
@@ -33,25 +33,12 @@ bl_info = {
     "category": "Import-Export"}
 
 
-if "bpy" in locals():
-	import imp
-	if "newDaeExport" in locals():
-		imp.reload(newDaeExport)
-	if "import_dae" in locals():
-		imp.reload(import_dae)
-	if "import_level" in locals():
-		imp.reload(import_level)
-	
-
-import math
 import bpy
-import mathutils
-import os
-import bpy_extras
 
 from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty, IntProperty
 
 from bpy_extras.io_utils import (ExportHelper,
+								ImportHelper,	
                                  path_reference_mode,
                                  axis_conversion,
                                  )
@@ -128,7 +115,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
         from . import newDaeExport
         return newDaeExport.save(self.filepath)
 
-class ImportDAE(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+class ImportDAE(bpy.types.Operator, ImportHelper):
 	"""Import HWRM DAE"""
 	bl_idname = "import_scene.dae"
 	bl_label = "Import HWRM DAE"
@@ -190,7 +177,7 @@ class ImportDAE(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 			import_dae.ImportDAE(self.filepath, self.use_smoothing, self.dock_path_vis, self.merge_goblins)
 		return {'FINISHED'}
 ###############################################################################
-class ImportLevel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+class ImportLevel(bpy.types.Operator, ImportHelper):
 	"""Import HWRM Level"""
 	bl_idname = "import_scene.level"
 	bl_label = "Import HWRM Level"
@@ -216,23 +203,29 @@ class ImportLevel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 		import_level.ImportLevel(self.filepath)
 		return {'FINISHED'}
 ###############################################################################
-def menu_func(self, context):
+def menu_func_export(self, context):
     self.layout.operator(ExportDAE.bl_idname, text="HWRM Collada (.dae)")
 
-def menu_import(self, context):
+def menu_func_import(self, context):
 	self.layout.operator(ImportDAE.bl_idname, text="HWRM DAE (.dae)")
 	self.layout.operator(ImportLevel.bl_idname, text="HWRM Level (.level)")
 
+classes = (ExportDAE, ImportDAE, ImportLevel)
+	
 def register():
-	bpy.utils.register_module(__name__)
-	bpy.types.INFO_MT_file_export.append(menu_func)
-	bpy.types.INFO_MT_file_import.append(menu_import)
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+    bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 	
 	
 def unregister():
-	bpy.utils.unregister_module(__name__)
-	bpy.types.INFO_MT_file_export.remove(menu_func)
-	bpy.types.INFO_MT_file_import.remove(menu_import)
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
+
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
 
 if __name__ == "__main__":
     register()

@@ -246,7 +246,7 @@ def meshBuilder(matName, Verts, Normals, UVCoords, vertOffset, normOffset, UVoff
 	subMesh.from_pydata(Verts,[],faceTris)
 	if matName is not "None":
 		print("meshBuilder() - appending material '" + matName + "' to submesh '" + subMesh.name + "'")
-		subMesh.materials.append(bpy.data.materials[matName.lstrip("#")])
+		#subMesh.materials.append(bpy.data.materials[matName.lstrip("#")])
 	
 	if smooth:
 		normIndices = []
@@ -263,7 +263,7 @@ def meshBuilder(matName, Verts, Normals, UVCoords, vertOffset, normOffset, UVoff
 	#Add UVs
 	if len(UVCoords) > 0:
 		for coords in range(0,len(UVoffsets)):
-			subMesh.uv_textures.new()
+			subMesh.uv_layers.new()
 	
 			meshUV = []
 			for p in range(0, len(pArray)):
@@ -273,7 +273,7 @@ def meshBuilder(matName, Verts, Normals, UVCoords, vertOffset, normOffset, UVoff
 				subMesh.uv_layers[coords].data[l].uv = meshUV[l]
 	
 	print("Linking objects...")
-	bpy.context.scene.objects.link(ob)
+	bpy.context.scene.collection.objects.link(ob)
 	
 	return ob
 
@@ -286,7 +286,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 		this_lamp = bpy.data.lamps.new(navl_name,'POINT')
 		
 		this_jnt = bpy.data.objects.new(navl_name,this_lamp)
-		jnt_context.scene.objects.link(this_jnt)
+		jnt_context.scene.collection.objects.link(this_jnt)
 		pi = math.pi
 		this_jnt.rotation_euler.x = jnt_rotn[0]*(pi/180.0)
 		this_jnt.rotation_euler.y = jnt_rotn[1]*(pi/180.0)
@@ -327,7 +327,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 		this_lamp = bpy.data.lamps.new(lite_name,'POINT')
 		
 		this_jnt = bpy.data.objects.new(lite_name,this_lamp)
-		jnt_context.scene.objects.link(this_jnt)
+		jnt_context.scene.collection.objects.link(this_jnt)
 		pi = math.pi
 		this_jnt.rotation_euler.x = jnt_rotn[0]*(pi/180.0)
 		this_jnt.rotation_euler.y = jnt_rotn[1]*(pi/180.0)
@@ -361,7 +361,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 		print("Creating MAT[xx]_PARAM[yy] node " + mat_pex_name)
 		
 		this_jnt = bpy.data.objects.new(mat_pex_name, None)
-		jnt_context.scene.objects.link(this_jnt)
+		jnt_context.scene.collection.objects.link(this_jnt)
 		pi = math.pi
 		this_jnt.rotation_euler.x = jnt_rotn[0] * (pi/180.0)
 		this_jnt.rotation_euler.y = jnt_rotn[1] * (pi/180.0)
@@ -386,7 +386,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 	else: # Not a nav light, background light or MAT[xx]_PARAM[yy], so carry on and create a joint...
 		print("Creating joint" + jnt_name)
 		this_jnt = bpy.data.objects.new(jnt_name, None)
-		jnt_context.scene.objects.link(this_jnt)
+		jnt_context.scene.collection.objects.link(this_jnt)
 		pi = math.pi
 		this_jnt.rotation_euler.x = jnt_rotn[0] * (pi/180.0)
 		this_jnt.rotation_euler.y = jnt_rotn[1] * (pi/180.0)
@@ -610,7 +610,7 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 				matTextures.append(t.attrib["texture"].rstrip("-image"))
 			# !- may not need to do replacing "DIFF" now... -!
 		
-		makeMaterials(matname, matTextures)
+		#makeMaterials(matname, matTextures)
 
 	#Find the mesh data and split the coords into 2D arrays
 
@@ -620,7 +620,7 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 		
 		blankMesh = bpy.data.meshes.new(meshName)
 		ob = bpy.data.objects.new(meshName, blankMesh)
-		bpy.context.scene.objects.link(ob)
+		bpy.context.scene.collection.objects.link(ob)
 		
 		print(meshName)	
 		
@@ -671,16 +671,16 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 		
 		#Combines the material submeshes into one mesh
 		for obs in subMeshes:
-			obs.select = True
+			obs.select_set(True)
 		
-		ob.select = True
-		bpy.context.scene.objects.active = ob
+		ob.select_set(True)
+		bpy.context.view_layer.objects.active = ob
 		bpy.ops.object.join()
 		ob.data.use_auto_smooth = True
 		bpy.ops.object.editmode_toggle()
 		bpy.ops.mesh.remove_doubles()
 		bpy.ops.object.editmode_toggle()
-		ob.select = False
+		ob.select_set(False)
 		
 	# Sort out hierarchy
 	for child in root:
@@ -764,7 +764,7 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 		if goblins_present:
 			print("Merging goblins...")
 			LOD0.select = True
-			bpy.context.scene.objects.active = LOD0
+			bpy.context.view_layer.objects.active = LOD0
 			bpy.ops.object.join()
 	
 	# Last thing, delete any HODOR param objects lying around
@@ -835,7 +835,7 @@ def ImportLOD0(DAEfullpath, smoothing_opt):
 			
 			blankMesh = bpy.data.meshes.new(meshName)
 			ob = bpy.data.objects.new(meshName, blankMesh)
-			bpy.context.scene.objects.link(ob)
+			bpy.context.scene.collection.objects.link(ob)
 			
 			print("Importing " + geo.attrib["name"] + " as: " + meshName)
 			
@@ -883,15 +883,15 @@ def ImportLOD0(DAEfullpath, smoothing_opt):
 			
 			#Combines the material submeshes into one mesh
 			for obs in subMeshes:
-				obs.select = True
+				obs.select_set(True)
 			
-			ob.select = True
-			bpy.context.scene.objects.active = ob
+			ob.select_set(True)
+			bpy.context.view_layer.objects.active = ob
 			bpy.ops.object.join()
 			ob.data.use_auto_smooth = True
 			bpy.ops.object.editmode_toggle()
 			bpy.ops.mesh.remove_doubles()
 			bpy.ops.object.editmode_toggle()
-			ob.select = False
+			ob.select_set(False)
 #
 # end

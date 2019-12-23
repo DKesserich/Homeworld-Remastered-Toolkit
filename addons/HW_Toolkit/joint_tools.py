@@ -299,11 +299,11 @@ class MakeLargeEngine(bpy.types.Operator):
 		localCoords = shipRoot.matrix_world.inverted()
 
 		nozzleJoint = bpy.data.objects.new("JNT[EngineNozzle"+str(context.scene.engine)+"]",None)
-		context.scene.objects.link(nozzleJoint)
+		context.scene.collection.objects.link(nozzleJoint)
 		nozzleJoint.location = localCoords * bpy.context.selected_objects[0].location
 		nozzleJoint.parent = bpy.data.objects['ROOT_LOD[0]']
 		axisJoint = bpy.data.objects.new("AXIS[EngineNozzle"+str(context.scene.engine)+"]",None)
-		context.scene.objects.link(axisJoint)
+		context.scene.collection.objects.link(axisJoint)
 		axisJoint.parent = nozzleJoint
 
 		engineGlowMat = bpy.data.materials.new("MATGLOW[HODOR_Glow]")
@@ -341,14 +341,14 @@ class MakeDockPath(bpy.types.Operator):
 		
 		if self.hasHoldDock == False:
 			holdDock = bpy.data.objects.new("HOLD_DOCK",None)
-			bpy.context.scene.objects.link(holdDock)
+			bpy.context.scene.collection.objects.link(holdDock)
 			holdDock.parent = bpy.data.objects['ROOT_LOD[0]']
 		else:
 			holdDock = bpy.data.objects['HOLD_DOCK']
 
 		if self.createOption == "entryPath":
 			pathRoot = bpy.data.objects.new("DOCK["+context.scene.pathName+"]",None)
-			bpy.context.scene.objects.link(pathRoot)
+			bpy.context.scene.collection.objects.link(pathRoot)
 			pathRoot["Fam"] = "Ship Type"
 			pathRoot["Link"] = "Linked Paths"
 			pathRoot["Flags"] = "None"
@@ -357,7 +357,7 @@ class MakeDockPath(bpy.types.Operator):
 
 			for x in range(0,6):
 				seg = bpy.data.objects.new("SEG["+str(x)+"]",None)
-				bpy.context.scene.objects.link(seg)
+				bpy.context.scene.collection.objects.link(seg)
 				seg.parent = pathRoot
 				seg.empty_draw_type = "SPHERE"
 				seg["Speed"] = 50
@@ -366,7 +366,7 @@ class MakeDockPath(bpy.types.Operator):
 
 		if self.createOption == "exitPath":
 			pathRoot = bpy.data.objects.new("DOCK["+context.scene.pathName+"Ex]",None)
-			bpy.context.scene.objects.link(pathRoot)
+			bpy.context.scene.collection.objects.link(pathRoot)
 			pathRoot["Fam"] = "Ship Type"
 			pathRoot["Link"] = "Linked Paths"
 			pathRoot["Flags"] = "Exit"
@@ -375,7 +375,7 @@ class MakeDockPath(bpy.types.Operator):
 
 			for x in range(0,3):
 				seg = bpy.data.objects.new("SEG["+str(x)+"]",None)
-				bpy.context.scene.objects.link(seg)
+				bpy.context.scene.collection.objects.link(seg)
 				seg.parent = pathRoot
 				seg.empty_draw_type = "SPHERE"				
 				seg["Speed"] = 50
@@ -408,16 +408,16 @@ class MakeShipLOD(bpy.types.Operator):
 				
 			if context.scene.lod_num == 0:
 				info_jnt = bpy.data.objects.new(jntName_info, None)
-				context.scene.objects.link(info_jnt)
+				context.scene.collection.objects.link(info_jnt)
 				class_jnt = bpy.data.objects.new(jntName_class, None)
-				context.scene.objects.link(class_jnt)
+				context.scene.collection.objects.link(class_jnt)
 				uv_joint = bpy.data.objects.new(jntName_uv, None)
-				context.scene.objects.link(uv_joint)
+				context.scene.collection.objects.link(uv_joint)
 				ship_jnt = bpy.data.objects.new(jntName, None)
-				context.scene.objects.link(ship_jnt)
+				context.scene.collection.objects.link(ship_jnt)
 				
 			LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
-			context.scene.objects.link(LOD_jnt)
+			context.scene.collection.objects.link(LOD_jnt)
 			LOD_jnt.rotation_euler.x = 1.57079633
 
 			if context.scene.lod_num == 0:
@@ -456,10 +456,10 @@ class MakeShipCOL(bpy.types.Operator):
 			colMesh = "COL[Root]"
 			
 			col_jnt = bpy.data.objects.new(colName, None)
-			context.scene.objects.link(col_jnt)
+			context.scene.collection.objects.link(col_jnt)
 			
 			#col_obj = bpy.context.selected_objects[0].copy()
-			#context.scene.objects.link(col_obj)
+			#context.scene.collection.objects.link(col_obj)
 			bpy.ops.object.duplicate()
 			col_obj = bpy.context.active_object
 			#bpy.ops.object.select_all(action='DESELECT')
@@ -513,28 +513,28 @@ class MakeWeaponHardpoint(bpy.types.Operator):
 			if self.createOptions == "Turret":
 				jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
 				weapon_lat = bpy.data.objects.new(jntName_Lat, None)
-				context.scene.objects.link(weapon_lat)
+				context.scene.collection.objects.link(weapon_lat)
 			
 			if self.createOptions == "Mesh":
 				jntName_Mesh = "JNT["+ context.scene.hardpoint_name +"."+str(context.scene.hardpoint_num)+"]"
 				weapon_mesh = bpy.data.objects.new(jntName_Mesh, None)
-				context.scene.objects.link(weapon_mesh)
+				context.scene.collection.objects.link(weapon_mesh)
 				
 				jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
 				weapon_lat = bpy.data.objects.new(jntName_Lat, None)
-				context.scene.objects.link(weapon_lat)
+				context.scene.collection.objects.link(weapon_lat)
 			
 			weapon_pos = bpy.data.objects.new(jntName_Pos, None)
-			context.scene.objects.link(weapon_pos)
+			context.scene.collection.objects.link(weapon_pos)
 			
 			weapon_dir = bpy.data.objects.new(jntName_Dir, None)
-			context.scene.objects.link(weapon_dir)
+			context.scene.collection.objects.link(weapon_dir)
 			
 			weapon_rest = bpy.data.objects.new(jntName_Rest, None)
-			context.scene.objects.link(weapon_rest)
+			context.scene.collection.objects.link(weapon_rest)
 			
 			weapon_muzzle = bpy.data.objects.new(jntName_Muz, None)
-			context.scene.objects.link(weapon_muzzle)
+			context.scene.collection.objects.link(weapon_muzzle)
 			
 			#Following standard Blender workflow, create the object at the 3D Cursor location
 			#Also, since the Direction and Rest joints are in local space for Postion,
@@ -608,11 +608,11 @@ class MakeSubSystem(bpy.types.Operator):
 			jntName_Rest = "JNT["+self.subType+"_Rest]"
 
 			subsys_pos = bpy.data.objects.new(jntName_Pos, None)
-			context.scene.objects.link(subsys_pos)
+			context.scene.collection.objects.link(subsys_pos)
 			subsys_dir = bpy.data.objects.new(jntName_Dir,None)
-			context.scene.objects.link(subsys_dir)
+			context.scene.collection.objects.link(subsys_dir)
 			subsys_rest = bpy.data.objects.new(jntName_Rest,None)
-			context.scene.objects.link(subsys_rest)
+			context.scene.collection.objects.link(subsys_rest)
 
 			
 			#if self.subType != "Hardpoint_Engine":
@@ -659,17 +659,17 @@ class MakeHardpoint(bpy.types.Operator):
 			
 			
 			hardp_pos = bpy.data.objects.new(jntName_Pos, None)
-			context.scene.objects.link(hardp_pos)
+			context.scene.collection.objects.link(hardp_pos)
 			
 			hardp_head = bpy.data.objects.new(jntName_Head, None)
-			context.scene.objects.link(hardp_head)
+			context.scene.collection.objects.link(hardp_head)
 			
 			
 			hardp_left = bpy.data.objects.new(jntName_Left, None)
-			context.scene.objects.link(hardp_left)
+			context.scene.collection.objects.link(hardp_left)
 			
 			hardp_up = bpy.data.objects.new(jntName_Up, None)
-			context.scene.objects.link(hardp_up)
+			context.scene.collection.objects.link(hardp_up)
 			
 			hardp_pos.parent = context.scene.objects["ROOT_LOD[0]"]
 			hardp_head.parent = hardp_pos
@@ -720,10 +720,10 @@ class MakeEngineSmall(bpy.types.Operator):
 			localCoords = shipRoot.matrix_world.inverted()
 			
 			engine_nozzle = bpy.data.objects.new(jntNozzle, None)
-			context.scene.objects.link(engine_nozzle)
+			context.scene.collection.objects.link(engine_nozzle)
 			
 			engine_burn = bpy.data.objects.new(jntBurn, None)
-			context.scene.objects.link(engine_burn)
+			context.scene.collection.objects.link(engine_burn)
 			
 			if self.useSelected:
 				bpy.context.selected_objects[0].name = jntShape
@@ -732,7 +732,7 @@ class MakeEngineSmall(bpy.types.Operator):
 				faces = [(2,3,1,0)]
 				engine_mesh = bpy.data.meshes.new(jntShape)
 				engine_shape = bpy.data.objects.new(jntShape,engine_mesh)
-				context.scene.objects.link(engine_shape)
+				context.scene.collection.objects.link(engine_shape)
 				engine_shape.parent = engine_nozzle
 				engine_mesh.from_pydata(verts,[],faces)
 				engine_mesh.update(calc_edges=True)
@@ -743,7 +743,7 @@ class MakeEngineSmall(bpy.types.Operator):
 			for f in range (0, context.scene.engine_small_flame):
 				flameDiv = "Flame[0]_Div[" + str(f) + "]"
 				flame_div = bpy.data.objects.new(flameDiv, None)
-				context.scene.objects.link(flame_div)
+				context.scene.collection.objects.link(flame_div)
 				
 				flame_div.parent = engine_burn
 				flame_div.location.z = 0-f
@@ -822,7 +822,7 @@ class CreateBGlight(bpy.types.Operator):
 			if not self.hasHolder:
 				# create HOLD_LITE
 				holdLite = bpy.data.objects.new("HOLD_LITE",None)
-				bpy.context.scene.objects.link(holdLite)
+				bpy.context.scene.collection.objects.link(holdLite)
 				holdLite.parent = bpy.data.objects['ROOT_LOD[0]']
 
 			if self.hasRoot:
@@ -834,7 +834,7 @@ class CreateBGlight(bpy.types.Operator):
 				# Create a lamp, name it and parent it to HOLD_LITE
 				lamp_data = bpy.data.lamps.new(name="LITE["+context.scene.bgLightName+"]", type='POINT')
 				lamp_object = bpy.data.objects.new(name="LITE["+context.scene.bgLightName+"]", object_data=lamp_data)
-				context.scene.objects.link(lamp_object)
+				context.scene.collection.objects.link(lamp_object)
 				lamp_object.location = cursorLoc
 				lamp_object.parent = bpy.data.objects['HOLD_LITE']
 				
@@ -1304,7 +1304,7 @@ class CreateMatParams(bpy.types.Operator):
 			self.hasHoldParams = True
 		else:
 			holdParams = bpy.data.objects.new("HOLD_PARAMS",None)
-			bpy.context.scene.objects.link(holdParams)
+			bpy.context.scene.collection.objects.link(holdParams)
 			holdParams.parent = bpy.data.objects['ROOT_LOD[0]']
 		
 		# Create the new joints at 0,0,0 and parent them
@@ -1314,7 +1314,7 @@ class CreateMatParams(bpy.types.Operator):
 			# Creating the joint
 			jnt_name = "MAT[" + context.scene.bgMatName + "]_PARAM[" + p + "]_Type[RGBA]"
 			jnt_mat_pex = bpy.data.objects.new(jnt_name, None)
-			context.scene.objects.link(jnt_mat_pex)
+			context.scene.collection.objects.link(jnt_mat_pex)
 			jnt_mat_pex.location.xyz = [0,0,0]
 			jnt_mat_pex.parent = bpy.data.objects['HOLD_PARAMS']
 			# Populate the custom properties
@@ -1359,7 +1359,7 @@ class CreateBGcameras(bpy.types.Operator):
 			for c in range(0,6):
 				camera_data.append(bpy.data.cameras.new(name=camera_name[c]))
 				camera_object.append(bpy.data.objects.new(name=camera_name[c], object_data=camera_data[c]))
-				bpy.context.scene.objects.link(camera_object[c])
+				bpy.context.scene.collection.objects.link(camera_object[c])
 				camera_object[c].data.lens_unit = 'FOV'
 				camera_object[c].data.angle = 1.5708 # 90deg field of view
 				camera_object[c].data.clip_end = 6000 # make it really far!
