@@ -1,3 +1,6 @@
+# Updated:
+#  Converts all materials to phong on export
+# Dom2 14-JUL-2019
 
 import bpy
 import math
@@ -59,6 +62,7 @@ def ColorToArrayToString(color):
 def writeTextures(dae,libImages,texName):
     thisImage = dae.ET.SubElement(libImages,'image',id=texName+'-image',name=texName)
     init = dae.ET.SubElement(thisImage,'init_from')
+    print("Texture = "+texName)
     init.text = D.textures[texName].image.filepath
 
 def writeMaterials(dae,libMats,libEffects,matName):
@@ -221,6 +225,7 @@ def writeGeometry(dae,libgeo,geoName):
     #Make the Triangles
     if len(mesh.materials)>0:
         for m in range(0,len(mesh.materials)):
+            print("+++"+str(m)+", len(mesh.materials)="+str(len(mesh.materials)))
             mat = mesh.materials[m]
             polys = []
             for p in mesh.polygons:
@@ -295,8 +300,13 @@ def writeAnims(dae,libanims,objName):
                     baseID = baseID+'Z.ANGLE'
             
             if curve.data_path == 'scale':
-                continue
-            
+                baseID = objName+'-scale'
+                if curve.array_index == 0:
+                    baseID = baseID+'.X'
+                if curve.array_index == 1:
+                    baseID = baseID+'.Y'
+                if curve.array_index == 2:
+                    baseID = baseID+'.Z'
             
             keys = []
             values = []
@@ -306,7 +316,8 @@ def writeAnims(dae,libanims,objName):
             
             for k in curve.keyframe_points:
                 keys.append(k.co.x/C.scene.render.fps)
-                if curve.data_path == 'location':
+                #if curve.data_path == 'location':
+                if curve.data_path == 'location' or curve.data_path == 'scale':
                     values.append(k.co.y)
                 if curve.data_path == 'rotation_euler':
                     values.append(math.degrees(k.co.y))
@@ -393,7 +404,7 @@ def writeNodes(dae,parentNode,libgeo,libanims,objectName):
     if D.objects[objectName].type == 'LAMP':    
         print('Found Lamp '+objectName)
         lamp = D.objects[objectName].data
-        if hasattr(lamp,'["Type"]'):
+        if hasattr(lamp,'["Phase"]'): # Need to pick up on "Phase" to avoid confusion with BackgroundLights -- Dom2
             print('Found NavLight')
             lampColorR = str(lamp.color.r)
             lampColorG = str(lamp.color.g)
@@ -414,7 +425,26 @@ def writeNodes(dae,parentNode,libgeo,libanims,objectName):
             thisNode.set('id',newName)
             thisNode.set('name',newName)   
             thisNode.set('sid',newName)
-    
+            
+        elif hasattr(lamp,'["Atten"]'): # Need to pick up on "Atten" to avoid confusion with NavLights -- Dom2
+            print('Found BackgroundLight')
+            lampColorR = str(lamp.color.r)
+            lampColorG = str(lamp.color.g)
+            lampColorB = str(lamp.color.b)
+            # Not sure how to grab the spec yet...
+            #lampSpecR = str(lamp.specular.r)
+            #lampSpecG = str(lamp.specular.g)
+            #lampSpecB = str(lamp.specular.b)
+            lampAtten = lamp["Atten"]
+            lampType = lamp["Type"]
+            
+            newName = objectName+'_Type['+lampType+']_Diff['+lampColorR+','+lampColorG+','+lampColorB+']_Spec[0,0,0]_Atten['+lampAtten+']'
+            
+            print(newName)
+            thisNode.set('id',newName)
+            thisNode.set('name',newName)   
+            thisNode.set('sid',newName)
+            
     #Parse Dock Node Data and append to name
     if 'DOCK[' in objectName:
         print("Found Dock path "+objectName)
@@ -451,6 +481,37 @@ def writeNodes(dae,parentNode,libgeo,libanims,objectName):
             thisNode.set('id',newName)
             thisNode.set('name',newName)
             thisNode.set('sid',newName)
+    
+    #Parse MAT[xxx]_PARAM[yyy] Nodes
+    if 'MAT[' in objectName and 'PARAM[' in objectName:
+        print("This is a MAT[xxx]_PARAM[yyy] joint...")
+        matPexNode = D.objects[objectName]
+        newName = objectName.split('.')[0] # in case it is "MAT[xxx]_PARAM[yyy]_Type[RGBA].001"
+        print(str(newName))
+        """
+        if hasattr(matPexNode,'["Type6"]'):
+            matPEXtype = str(matPexNode["Type6"])
+            newName = newName+'_Type6['+matPEXtype+']'
+        if hasattr(matPexNode,'["Type"]'):
+            matPEXtype = str(matPexNode["Type"])
+            newName = newName+'_Type['+matPEXtype+']'
+        """
+        # If the joint has custom properties, build them into the name
+        if len(matPexNode.keys())>1:
+            newName = newName + "_Data["
+            for p in matPexNode.keys():
+                print("found parameter " + str(p))
+                if p.startswith("data"):
+                    print("it is a data paramter")
+                    if newName.endswith("["):
+                        newName = newName + str(matPexNode[p])
+                    else:
+                        newName = newName + "," + str(matPexNode[p])
+            newName = newName + "]" # Joint name should now be "MAT[xxx]_PARAM[yyy]_Type[RGBA]_Data[i,k,j]"
+
+        thisNode.set('id',newName)
+        thisNode.set('name',newName)
+        thisNode.set('sid',newName)
     
     if D.objects[objectName].children is not None:
         for c in D.objects[objectName].children:
@@ -518,8 +579,10 @@ class HwDAE:
         for ob in D.objects:
             if ob.parent is None:
                 writeNodes(self,thisScene,libGeometries,libAnimations,ob.name)
-   
+    
         for mat in D.materials:
+            #Set Phong
+            D.materials[mat.name].specular_shader = "PHONG"
             writeMaterials(self,libMats,libEffects,mat.name)   
 
         for tex in D.textures:

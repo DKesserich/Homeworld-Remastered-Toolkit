@@ -18,6 +18,14 @@
 
 # <pep8-80 compliant>
 
+# Updated: 
+#  - Backgrounds panel to:
+#	- Create "LITE" lamps
+#	- Create "MAT[xx]_PARAM[yy]" joints
+#	- Create cameras and render cube maps
+# Dom2 - 21-SEP-2018
+#
+
 import math
 import bpy
 import mathutils
@@ -126,8 +134,8 @@ class HMRMPanelTools(bpy.types.Panel):
 		layout.operator("hmrm.make_subsystem","Generic").subType = "HardpointGeneric"
 		
 		
-        
-        
+		
+		
 class HMRMPanelEngines(bpy.types.Panel):
 	"""Creates a Panel in the Create window"""
 	bl_label = "Engines"
@@ -178,7 +186,7 @@ class HMRMPanelNavLights(bpy.types.Panel):
 	
 	bpy.types.Scene.navLightName = StringProperty(
 		name = "Name",
-		default = "Default")
+		default = "nav1")
 
 	def draw(self, context):
 		layout = self.layout
@@ -216,13 +224,74 @@ class HMRMPanelDockPaths(bpy.types.Panel):
 		layout.operator("hmrm.make_dock_path","Make Entry Path").createOption = "entryPath"
 		layout.operator("hmrm.make_dock_path","Make Exit Path").createOption = "exitPath"
 
+###############################################################################
+### v ADDED BY DOM2 v
+###############################################################################
+
+#Background Panel
+class HMRMPanelBackground(bpy.types.Panel):
+	"""Creates a Panel in the Create Window"""
+	bl_label = "Backgrounds"
+	bl_idName = "HMRM_TOOLS_BACKGROUND"
+	bl_space_type = 'VIEW_3D'
+	bl_region_type = 'TOOLS'
+	bl_context = "objectmode"
+	bl_category = "HW Joint Tools"
+	
+	bpy.types.Scene.bgLightName = StringProperty(
+		name = "Name",
+		default = "lite1")
+		
+	bpy.types.Scene.bgMatName = StringProperty(
+		name = "Material",
+		default = "material name")
+
+	# Dropdown list for shaders
+	bpy.types.Scene.bgShaderType = bpy.props.EnumProperty(
+		name = "Shader",
+		items=[ # (value, text, hover description)
+			("bg_moon","bg_moon","bg_moon shader"),
+			("bg_planet","bg_planet","bg_planet shader"),
+			("bg_planetmelt","bg_planetmelt","bg_planetmelt shader"),
+			("bg_planetmelted","bg_planetmelted","bg_planetmelted shader"),
+			("bg_planetoid","bg_planetoid","bg_planetoid shader")
+		]
+	)
+	
+	def draw(self, context):
+		layout = self.layout
+		scn = context.scene
+
+		# Create background "LITE" lamps (ambient or directional)
+		layout.label("Background Lights")
+		layout.prop(scn,'bgLightName')
+		layout.operator("hmrm.create_bglight","Create Ambient Light").createOption = "Amb"
+		layout.operator("hmrm.create_bglight","Create Directional Light").createOption = "Dir"
+		
+		layout.separator()
+		
+		# Create background "MAT[xx]_PARAM[yy]" joints
+		layout.label("Material Parameter Joints")
+		layout.prop(scn,'bgMatName')
+		layout.prop(scn,'bgShaderType')
+		layout.operator("hmrm.create_matparams","Create parameter joints")
+		
+		layout.separator()
+		
+		# Create cameras for cube maps and render cube maps
+		layout.label("Cube Maps")
+		layout.operator("hmrm.create_bgcameras","Create Cube Map Cameras")
+		layout.operator("hmrm.render_cube_maps","Render Cube Maps")
+
+###############################################################################
+### ^ ADDED BY DOM2 ^
+###############################################################################
+
 #Large Engine mesh converter
 class MakeLargeEngine(bpy.types.Operator):
 	bl_idname = "hmrm.make_engine_large"
 	bl_label = "Make Large Engine"
 	bl_options = {"UNDO"}
-	
-	
 	
 	def invoke(self, context, event):
 		shipRoot = context.scene.objects["ROOT_LOD[0]"]
@@ -236,8 +305,6 @@ class MakeLargeEngine(bpy.types.Operator):
 		axisJoint = bpy.data.objects.new("AXIS[EngineNozzle"+str(context.scene.engine)+"]",None)
 		context.scene.objects.link(axisJoint)
 		axisJoint.parent = nozzleJoint
-
-		
 
 		engineGlowMat = bpy.data.materials.new("MATGLOW[HODOR_Glow]")
 
@@ -253,9 +320,7 @@ class MakeLargeEngine(bpy.types.Operator):
 			bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
 			glowEnum = glowEnum+1
 
-
 		return{"FINISHED"}
-
 
 class MakeDockPath(bpy.types.Operator):
 	bl_idname = "hmrm.make_dock_path"
@@ -274,7 +339,6 @@ class MakeDockPath(bpy.types.Operator):
 		else:
 			self.hasHoldDock = False
 		
-
 		if self.hasHoldDock == False:
 			holdDock = bpy.data.objects.new("HOLD_DOCK",None)
 			bpy.context.scene.objects.link(holdDock)
@@ -320,8 +384,7 @@ class MakeDockPath(bpy.types.Operator):
 
 		return {"FINISHED"}
 
-			 
-        
+
 class MakeShipLOD(bpy.types.Operator):
 	bl_idname = "hmrm.make_ship"
 	bl_label = "Create Ship"
@@ -353,8 +416,6 @@ class MakeShipLOD(bpy.types.Operator):
 				ship_jnt = bpy.data.objects.new(jntName, None)
 				context.scene.objects.link(ship_jnt)
 				
-				
-				
 			LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
 			context.scene.objects.link(LOD_jnt)
 			LOD_jnt.rotation_euler.x = 1.57079633
@@ -382,9 +443,8 @@ class MakeShipLOD(bpy.types.Operator):
 		else:
 			self.report({'ERROR'}, "No object found. Please select object.")
 			
-			
 		return {"FINISHED"}
-    
+	
 class MakeShipCOL(bpy.types.Operator):
 	bl_idname = "hmrm.make_col"
 	bl_label = "Create Collision"
@@ -417,7 +477,7 @@ class MakeShipCOL(bpy.types.Operator):
 			self.report({'ERROR'}, "No object found. Please select object.")
 			
 		return {"FINISHED"}
-        
+		
 class MakeWeaponHardpoint(bpy.types.Operator):
 	bl_idname = "hmrm.make_weapon"
 	bl_label = "Add Weapon Hardpoint"
@@ -634,72 +694,72 @@ class MakeHardpoint(bpy.types.Operator):
 			self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
 			
 		return {"FINISHED"}
-    
-    
+	
+	
 class MakeEngineSmall(bpy.types.Operator):
-    bl_idname = "hmrm.make_engine_small"
-    bl_label = "Create Small Engine"
-    bl_options = {"UNDO"}
-    useSelected = bpy.props.BoolProperty()
-    hasRoot = bpy.props.BoolProperty()
-    
-    def invoke(self, context, event):
-        
-        obs = bpy.data.objects
-        for ob in obs:
-            if "ROOT_LOD[0]" in ob.name:
-                self.hasRoot = True
-                
-        if self.hasRoot:
-            jntNozzle = "JNT[EngineNozzle" + str(context.scene.engine) + "]"
-            jntBurn = "BURN[EngineBurn" + str(context.scene.engine) + "]"
-            jntShape = "ETSH[EngineShape" + str(context.scene.engine) + "]"
+	bl_idname = "hmrm.make_engine_small"
+	bl_label = "Create Small Engine"
+	bl_options = {"UNDO"}
+	useSelected = bpy.props.BoolProperty()
+	hasRoot = bpy.props.BoolProperty()
+	
+	def invoke(self, context, event):
+		
+		obs = bpy.data.objects
+		for ob in obs:
+			if "ROOT_LOD[0]" in ob.name:
+				self.hasRoot = True
+				
+		if self.hasRoot:
+			jntNozzle = "JNT[EngineNozzle" + str(context.scene.engine) + "]"
+			jntBurn = "BURN[EngineBurn" + str(context.scene.engine) + "]"
+			jntShape = "ETSH[EngineShape" + str(context.scene.engine) + "]"
 
-            shipRoot = context.scene.objects["ROOT_LOD[0]"]
-            cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
-            localCoords = shipRoot.matrix_world.inverted()
-            
-            engine_nozzle = bpy.data.objects.new(jntNozzle, None)
-            context.scene.objects.link(engine_nozzle)
-            
-            engine_burn = bpy.data.objects.new(jntBurn, None)
-            context.scene.objects.link(engine_burn)
-            
-            if self.useSelected:
-                bpy.context.selected_objects[0].name = jntShape
-            else:
-                verts = [(0.5,-0.5,0),(0.5,0.5,0),(-0.5,-0.5,0),(-0.5,0.5,0)]
-                faces = [(2,3,1,0)]
-                engine_mesh = bpy.data.meshes.new(jntShape)
-                engine_shape = bpy.data.objects.new(jntShape,engine_mesh)
-                context.scene.objects.link(engine_shape)
-                engine_shape.parent = engine_nozzle
-                engine_mesh.from_pydata(verts,[],faces)
-                engine_mesh.update(calc_edges=True)
-            
-            engine_nozzle.parent = context.scene.objects["ROOT_LOD[0]"]
-            engine_burn.parent = engine_nozzle
-            
-            for f in range (0, context.scene.engine_small_flame):
-                flameDiv = "Flame[0]_Div[" + str(f) + "]"
-                flame_div = bpy.data.objects.new(flameDiv, None)
-                context.scene.objects.link(flame_div)
-                
-                flame_div.parent = engine_burn
-                flame_div.location.z = 0-f
-            
-            
-            #engine_nozzle.rotation_euler.x = 1.57079633
-            if self.useSelected:
-                engine_nozzle.location = localCoords * bpy.context.selected_objects[0].location
-                bpy.context.selected_objects[0].parent = engine_nozzle
-                bpy.context.selected_objects[0].location.xyz = [0,0,0]
-            else:
-                engine_nozzle.location = cursorLoc
-        else:
-            self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
-        
-        return {"FINISHED"}
+			shipRoot = context.scene.objects["ROOT_LOD[0]"]
+			cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+			localCoords = shipRoot.matrix_world.inverted()
+			
+			engine_nozzle = bpy.data.objects.new(jntNozzle, None)
+			context.scene.objects.link(engine_nozzle)
+			
+			engine_burn = bpy.data.objects.new(jntBurn, None)
+			context.scene.objects.link(engine_burn)
+			
+			if self.useSelected:
+				bpy.context.selected_objects[0].name = jntShape
+			else:
+				verts = [(0.5,-0.5,0),(0.5,0.5,0),(-0.5,-0.5,0),(-0.5,0.5,0)]
+				faces = [(2,3,1,0)]
+				engine_mesh = bpy.data.meshes.new(jntShape)
+				engine_shape = bpy.data.objects.new(jntShape,engine_mesh)
+				context.scene.objects.link(engine_shape)
+				engine_shape.parent = engine_nozzle
+				engine_mesh.from_pydata(verts,[],faces)
+				engine_mesh.update(calc_edges=True)
+			
+			engine_nozzle.parent = context.scene.objects["ROOT_LOD[0]"]
+			engine_burn.parent = engine_nozzle
+			
+			for f in range (0, context.scene.engine_small_flame):
+				flameDiv = "Flame[0]_Div[" + str(f) + "]"
+				flame_div = bpy.data.objects.new(flameDiv, None)
+				context.scene.objects.link(flame_div)
+				
+				flame_div.parent = engine_burn
+				flame_div.location.z = 0-f
+			
+			
+			#engine_nozzle.rotation_euler.x = 1.57079633
+			if self.useSelected:
+				engine_nozzle.location = localCoords * bpy.context.selected_objects[0].location
+				bpy.context.selected_objects[0].parent = engine_nozzle
+				bpy.context.selected_objects[0].location.xyz = [0,0,0]
+			else:
+				engine_nozzle.location = cursorLoc
+		else:
+			self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
+		
+		return {"FINISHED"}
 
 
 class ConvertToNavlight(bpy.types.Operator):
@@ -710,34 +770,638 @@ class ConvertToNavlight(bpy.types.Operator):
 	hasRoot = bpy.props.BoolProperty()
 
 	def invoke(self,context,event):
-        
-            obs = bpy.data.objects
-            for ob in obs:
-                if "ROOT_LOD[0]" in ob.name:
-                    self.hasRoot = True
-                
-            if self.hasRoot:
-                shipRoot = context.scene.objects["ROOT_LOD[0]"]
-                cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
-                localCoords = shipRoot.matrix_world.inverted()
+		
+			obs = bpy.data.objects
+			for ob in obs:
+				if "ROOT_LOD[0]" in ob.name:
+					self.hasRoot = True
+				
+			if self.hasRoot:
+				shipRoot = context.scene.objects["ROOT_LOD[0]"]
+				cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+				localCoords = shipRoot.matrix_world.inverted()
 
-                if bpy.context.active_object.type == "LAMP":
-                    navLight = bpy.context.active_object
+				if bpy.context.active_object.type == "LAMP":
+					navLight = bpy.context.active_object
 
-                    navLight.name = 'NAVL['+context.scene.navLightName+']'
-                    navLight.data["Type"] = self.createOption
-                    navLight.data["Phase"] = 0.0
-                    navLight.data["Freq"] = 0.0
-                    navLight.data["Flags"] = "None"
+					navLight.name = 'NAVL['+context.scene.navLightName+']'
+					navLight.data["Type"] = self.createOption
+					navLight.data["Phase"] = 0.0
+					navLight.data["Freq"] = 0.0
+					navLight.data["Flags"] = "None"
 
-                    navLight.parent = bpy.data.objects['ROOT_LOD[0]']
-                    navLight.location = localCoords * navLight.location
+					navLight.parent = bpy.data.objects['ROOT_LOD[0]']
+					navLight.location = localCoords * navLight.location
 
-            else:
-                self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
-            
-            return {"FINISHED"}
+			else:
+				self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
+			
+			return {"FINISHED"}
 
+###############################################################################
+#						  v ADDED BY DOM2 v								  #
+###############################################################################
+
+class CreateBGlight(bpy.types.Operator):
+	bl_idname = "hmrm.create_bglight"
+	bl_label = "Create background light"
+	bl_options = {"UNDO"}
+	createOption = bpy.props.StringProperty()
+	hasRoot = bpy.props.BoolProperty()
+
+	def invoke(self,context,event):
+		
+			obs = bpy.data.objects
+			for ob in obs:
+				if "ROOT_LOD[0]" in ob.name:
+					self.hasRoot = True # ROOT_LOD[0] already exists
+					shipRoot = context.scene.objects["ROOT_LOD[0]"]
+				elif "HOLD_LITE" in ob.name:
+					self.hasHolder = True # HOLD_LITE already exists
+			
+			if not self.hasHolder:
+				# create HOLD_LITE
+				holdLite = bpy.data.objects.new("HOLD_LITE",None)
+				bpy.context.scene.objects.link(holdLite)
+				holdLite.parent = bpy.data.objects['ROOT_LOD[0]']
+
+			if self.hasRoot:
+				
+				liteRoot = context.scene.objects["HOLD_LITE"]
+				cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+				localCoords = liteRoot.matrix_world.inverted()
+				
+				# Create a lamp, name it and parent it to HOLD_LITE
+				lamp_data = bpy.data.lamps.new(name="LITE["+context.scene.bgLightName+"]", type='POINT')
+				lamp_object = bpy.data.objects.new(name="LITE["+context.scene.bgLightName+"]", object_data=lamp_data)
+				context.scene.objects.link(lamp_object)
+				lamp_object.location = cursorLoc
+				lamp_object.parent = bpy.data.objects['HOLD_LITE']
+				
+				# Add parameter data
+				lamp_object.data["Type"] = self.createOption
+				lamp_object.data["Atten"] = "None, 1"
+				
+				# Select it make active
+				lamp_object.select = True
+				context.scene.objects.active = lamp_object				
+				
+			else:
+				self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")					
+			
+			return {"FINISHED"}
+
+class CreateMatParams(bpy.types.Operator):
+	print("CreateMatParams()")
+	bl_idname = "hmrm.create_matparams"
+	bl_label = "Create MAT[xx]_PARAM[yy]"
+	bl_options = {"UNDO"}
+	
+	def invoke(self, context,event):
+		
+		# Massive dictionary of shader parameters with default parameters
+		
+		shaderParams = {
+			# Default bg_moon shader parameters
+			"bg_moon": {
+				"MoodLight": {
+					"data": [0, 0, 0, 0],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"MoodDir": {
+					"data": [0, 0, 0],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"AtmoInfo": {
+					"data": [0.025, 0.775, 2.5, 2.5],
+					"dataname": ["data0_scalepush", "data1_dotfalloff", "data2_keycurve", "data3_fillcurve"]
+				},
+				"AtmoFade": {
+					"data": [1, 1],
+					"dataname": ["data0_curve", "data1_alpha"]
+				},
+				"ScatterInfo": {
+					"data": [0.5, 0.5],
+					"dataname": ["data0_scale", "data1_curve"]
+				},
+				"LightScales": {
+					"data": [0.2, 0.1, 1, 0.35],
+					"dataname": ["data0_surfaceambient", "data1_cloudambient", "data2_key", "data3_fill"]
+				},
+				"HaloKeySurf": {
+					"data": [0.8, 0.45, 0.23],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloFillSurf": {
+					"data": [0.85, 0.5, 0.65],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"SurfDiff": {
+					"data": [0, 0.75, 0, 0],
+					"dataname": ["data0", "data1_fren", "data2", "data3"]
+				},
+				"SurfGlow": {
+					"data": [1, 0.75, 0.3, 4],
+					"dataname": ["data0_power", "data1_fren", "data2_keyoffset", "data3_scale"]
+				},
+				"SurfSpec": {
+					"data": [1, 1, 0, 0],
+					"dataname": ["data0_power", "data1_fren", "data2", "data3"]
+				},
+				"SurfGloss": {
+					"data": [0.1, 125, 30, 0],
+					"dataname": ["data0_curve", "data1_scale", "data2_bias", "data3"]
+				},
+				"SurfRefl": {
+					"data": [0.5, 0.55, 0.65, 0],
+					"dataname": ["data0_power", "data1_fren", "data2_addmix", "data3"]
+				},
+				"SurfFren": {
+					"data": [1, 1.01, 2.5],
+					"dataname": ["data0_power", "data1_bias", "data2_curve"]
+				},
+				"FinalGama": {
+					"data": [1, 1, 1, 1],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"ReliefScale": {
+					"data": [1, 1, 1],
+					"dataname": ["data0", "data1", "data2"]
+				}
+			},
+			# Default bg_planet shader parameters
+			"bg_planet": {
+				"AtmoInfo": {
+					"data": [0.025, 0.775, 2.5, 2.5],
+					"dataname": ["data0_scalepush", "data1_dotfalloff", "data2_keycurve", "data3_fillcurve"]
+				},
+				"AtmoFade": {
+					"data": [1, 1],
+					"dataname": ["data0_curve", "data1_alpha"]
+				},
+				"ScatterInfo": {
+					"data": [0.5, 0.5],
+					"dataname": ["data0_scatterscale", "data1_curve"]
+				},
+				"LightScales": {
+					"data": [0.2, 0.1, 1, 0.35],
+					"dataname": ["data0_surfaceambient", "data1_cloudambient", "data2_key", "data3_fill"]
+				},
+				"HaloKeySurf": {
+					"data": [0.8, 0.45, 0.23],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloKeyCloud": {
+					"data": [0.85, 0.65, 0.43],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloFillSurf": {
+					"data": [0.85, 0.5, 0.65],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloFillCloud": {
+					"data": [0.92, 0.75, 0.83],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"MoveCloud1": {
+					"data": [-0.0083, 0, 0.025, 0.025],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveCloud2": {
+					"data": [-0.006, 0, 0.04, 0.04],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveCloud3": {
+					"data": [-0.0047, 0, 0.05, 0.05],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud1": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud2": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud3": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveWarp": {
+					"data": [0.02, 0],
+					"dataname": ["data0_speedx", "data1_speedy"]
+				},
+				"SurfDiff": {
+					"data": [0, 0.75, 0, 0],
+					"dataname": ["data0", "data1_fren", "data2", "data3"]
+				},
+				"SurfGlow": {
+					"data": [1, 0.75, 0.3, 4],
+					"dataname": ["data0_power", "data1_fren", "data2_keyoffset", "data3_scale"]
+				},
+				"SurfSpec": {
+					"data": [1, 1, 0, 0],
+					"dataname": ["data0_power", "data1_fren", "data2", "data3"]
+				},
+				"SurfGloss": {
+					"data": [0.1, 125, 30, 0],
+					"dataname": ["data0_curve", "data1_scale", "data2_bias", "data3"]
+				},
+				"SurfRefl": {
+					"data": [0.5, 0.55, 0.65, 0],
+					"dataname": ["data0_power", "data1_fren", "data2_addmix", "data3"]
+				},
+				"SurfFren": {
+					"data": [1, 1.01, 2.5],
+					"dataname": ["data0_power", "data1_bias", "data2_curve"]
+				},
+				"FinalGama": {
+					"data": [1, 1, 1, 1],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"ReliefScale": {
+					"data": [1, 1, 1],
+					"dataname": ["data0", "data1", "data2"]
+				}
+			},
+			# Default bg_planetmelt shader parameters
+			"bg_planetmelt": {
+				"AtmoInfo": {
+					"data": [0.025, 0.775, 2.5, 2.5],
+					"dataname": ["data0_scalepush", "data1_dotfalloff", "data2_keycurve", "data3_fillcurve"]
+				},
+				"AtmoFade": {
+					"data": [1, 1],
+					"dataname": ["data0_curve", "data1_alpha"]
+				},
+				"ScatterInfo": {
+					"data": [0.5, 0.5],
+					"dataname": ["data0_scatterscale", "data1_curve"]
+				},
+				"LightScales": {
+					"data": [0.2, 0.1, 1, 0.35],
+					"dataname": ["data0_surfaceambient", "data1_cloudambient", "data2_key", "data3_fill"]
+				},
+				"HaloKeySurf": {
+					"data": [0.8, 0.45, 0.23],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloKeyCloud": {
+					"data": [0.85, 0.65, 0.43],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloFillSurf": {
+					"data": [0.85, 0.5, 0.65],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloFillCloud": {
+					"data": [0.92, 0.75, 0.83],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"MoveCloud1": {
+					"data": [-0.0083, 0, 0.025, 0.025],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveCloud2": {
+					"data": [-0.006, 0, 0.04, 0.04],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveCloud3": {
+					"data": [-0.0047, 0, 0.05, 0.05],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud1": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud2": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud3": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveWarp": {
+					"data": [0.02, 0],
+					"dataname": ["data0_speedx", "data1_speedy"]
+				},
+				"SurfDiff": {
+					"data": [0, 0.75, 0, 0],
+					"dataname": ["data0", "data1_fren", "data2", "data3"]
+				},
+				"SurfGlow": {
+					"data": [1, 0.75, 0.3, 4],
+					"dataname": ["data0_power", "data1_fren", "data2_keyoffset", "data3_scale"]
+				},
+				"SurfSpec": {
+					"data": [1, 1, 0, 0],
+					"dataname": ["data0_power", "data1_fren", "data2", "data3"]
+				},
+				"SurfGloss": {
+					"data": [0.1, 125, 30, 0],
+					"dataname": ["data0_curve", "data1_scale", "data2_bias", "data3"]
+				},
+				"SurfRefl": {
+					"data": [0.5, 0.55, 0.65, 0],
+					"dataname": ["data0_power", "data1_fren", "data2_addmix", "data3"]
+				},
+				"SurfFren": {
+					"data": [1, 1.01, 2.5],
+					"dataname": ["data0_power", "data1_bias", "data2_curve"]
+				},
+				"Trigger": {
+					"data": [0, 0, 0, 0],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"TimeScale": {
+					"data": [0],
+					"dataname": ["data0"]
+				},
+				"FinalGama": {
+					"data": [1, 1, 1, 1],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"ReliefScale": {
+					"data": [1, 1, 1],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				}
+			},
+			# Default bg_planetmelted shader parameters
+			"bg_planetmelted": {
+				"AtmoInfo": {
+					"data": [0.025, 0.775, 2.5, 2.5],
+					"dataname": ["data0_scalepush", "data1_dotfalloff", "data2_keycurve", "data3_fillcurve"]
+				},
+				"AtmoFade": {
+					"data": [1, 1],
+					"dataname": ["data0_curve", "data1_alpha"]
+				},
+				"ScatterInfo": {
+					"data": [0.5, 0.5],
+					"dataname": ["data0_scatterscale", "data1_curve"]
+				},
+				"LightScales": {
+					"data": [0.2, 0.1, 1, 0.35],
+					"dataname": ["data0_surfaceambient", "data1_cloudambient", "data2_key", "data3_fill"]
+				},
+				"HaloKeySurf": {
+					"data": [0.8, 0.45, 0.23],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloKeyCloud": {
+					"data": [0.85, 0.65, 0.43],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloFillSurf": {
+					"data": [0.85, 0.5, 0.65],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloFillCloud": {
+					"data": [0.92, 0.75, 0.83],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"MoveCloud1": {
+					"data": [-0.0083, 0, 0.025, 0.025],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveCloud2": {
+					"data": [-0.006, 0, 0.04, 0.04],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveCloud3": {
+					"data": [-0.0047, 0, 0.05, 0.05],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud1": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud2": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"TintCloud3": {
+					"data": [1, 1, 1],
+					"dataname": ["data0_speedx", "data1_speedy", "data2_scalex", "data3_scaley"]
+				},
+				"MoveWarp": {
+					"data": [0.02, 0],
+					"dataname": ["data0_speedx", "data1_speedy"]
+				},
+				"SurfDiff": {
+					"data": [0, 0.75, 0, 0],
+					"dataname": ["data0", "data1_fren", "data2", "data3"]
+				},
+				"SurfGlow": {
+					"data": [1, 0.75, 0.3, 4],
+					"dataname": ["data0_power", "data1_fren", "data2_keyoffset", "data3_scale"]
+				},
+				"SurfSpec": {
+					"data": [1, 1, 0, 0],
+					"dataname": ["data0_power", "data1_fren", "data2", "data3"]
+				},
+				"SurfGloss": {
+					"data": [0.1, 125, 30, 0],
+					"dataname": ["data0_curve", "data1_scale", "data2_bias", "data3"]
+				},
+				"SurfRefl": {
+					"data": [0.5, 0.55, 0.65, 0],
+					"dataname": ["data0_power", "data1_fren", "data2_addmix", "data3"]
+				},
+				"SurfFren": {
+					"data": [1, 1.01, 2.5],
+					"dataname": ["data0_power", "data1_bias", "data2_curve"]
+				},
+				"Trigger": {
+					"data": [0, 0, 0, 0],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"TimeScale": {
+					"data": [0],
+					"dataname": ["data0"]
+				},
+				"FinalGama": {
+					"data": [1, 1, 1, 1],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"ReliefScale": {
+					"data": [1, 1, 1],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				}
+			},
+			# Default bg_planetoid shader parameters
+			"bg_planetoid": {
+				"MoodLight": {
+					"data": [0, 0, 0, 0],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"MoodDir": {
+					"data": [0, 0, 0],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"AtmoInfo": {
+					"data": [0.025, 0.775, 2.5, 2.5],
+					"dataname": ["data0_scalepush", "data1_dotfalloff", "data2_keycurve", "data3_fillcurve"]
+				},
+				"AtmoFade": {
+					"data": [1, 1],
+					"dataname": ["data0_curve", "data1_alpha"]
+				},
+				"ScatterInfo": {
+					"data": [0.5, 0.5],
+					"dataname": ["data0_scatterscale", "data1_curve"]
+				},
+				"LightScales": {
+					"data": [0.2, 0.1, 1, 0.35],
+					"dataname": ["data0_surfaceambient", "data1_cloudambient", "data2_key", "data3_fill"]
+				},
+				"HaloKeySurf": {
+					"data": [0.8, 0.45, 0.23],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"HaloFillSurf": {
+					"data": [0.85, 0.5, 0.65],
+					"dataname": ["data0_R", "data1_G", "data2_B"]
+				},
+				"SurfDiff": {
+					"data": [0, 0.75, 0, 0],
+					"dataname": ["data0", "data1_fren", "data2", "data3"]
+				},
+				"SurfGlow": {
+					"data": [1, 0.75, 0.3, 4],
+					"dataname": ["data0_power", "data1_fren", "data2_keyoffset", "data3_scale"]
+				},
+				"SurfSpec": {
+					"data": [1, 1, 0, 0],
+					"dataname": ["data0_power", "data1_fren", "data2", "data3"]
+				},
+				"SurfGloss": {
+					"data": [0.1, 125, 30, 0],
+					"dataname": ["data0_curve", "data1_scale", "data2_bias", "data3"]
+				},
+				"SurfRefl": {
+					"data": [0.5, 0.55, 0.65, 0],
+					"dataname": ["data0_power", "data1_fren", "data2_addmix", "data3"]
+				},
+				"SurfFren": {
+					"data": [1, 1.01, 2.5],
+					"dataname": ["data0_power", "data1_bias", "data2_curve"]
+				},
+				"FinalGama": {
+					"data": [1, 1, 1, 1],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				},
+				"ReliefScale": {
+					"data": [1, 1, 1],
+					"dataname": ["data0", "data1", "data2", "data3"]
+				}
+			},
+		}
+		
+		# If no HOLD_PARAMS, create it
+		if bpy.data.objects.find('HOLD_PARAMS') != -1:
+			self.hasHoldParams = True
+		else:
+			holdParams = bpy.data.objects.new("HOLD_PARAMS",None)
+			bpy.context.scene.objects.link(holdParams)
+			holdParams.parent = bpy.data.objects['ROOT_LOD[0]']
+		
+		# Create the new joints at 0,0,0 and parent them
+		# Build PARAMS from dictionary of default shader parameters
+		for p in shaderParams[context.scene.bgShaderType].keys():
+			print("Parameter: " + p)
+			# Creating the joint
+			jnt_name = "MAT[" + context.scene.bgMatName + "]_PARAM[" + p + "]_Type[RGBA]"
+			jnt_mat_pex = bpy.data.objects.new(jnt_name, None)
+			context.scene.objects.link(jnt_mat_pex)
+			jnt_mat_pex.location.xyz = [0,0,0]
+			jnt_mat_pex.parent = bpy.data.objects['HOLD_PARAMS']
+			# Populate the custom properties
+			for d in range(0, len(shaderParams[context.scene.bgShaderType][p]["data"])):
+				this_data = shaderParams[context.scene.bgShaderType][p]["data"][d]
+				this_dataname = shaderParams[context.scene.bgShaderType][p]["dataname"][d]
+				print("Data item: " + this_dataname + " = " + str(this_data))
+				pass # Do we care about Type/Type6? Currently all are kept at "Type"
+				jnt_mat_pex[this_dataname] = this_data
+		
+		return {"FINISHED"}
+
+class CreateBGcameras(bpy.types.Operator):
+	print("CreateBGcameras()")
+	bl_idname = "hmrm.create_bgcameras"
+	bl_label = "Create background cameras"
+	bl_options = {"UNDO"}
+	createOption = bpy.props.StringProperty()
+	hasRoot = bpy.props.BoolProperty()
+
+	def invoke(self,context,event):
+		
+			obs = bpy.data.objects
+			
+			camera_data = []
+			camera_object = []
+			camera_rotation = [
+				[1.5708, 4.7123, 0],	  # 0 neg_y
+				[1.5708, 1.5708, 1.5708], # 1 neg_z
+				[1.5708, 4.7123, 3.1415], # 2 pos_z
+				[1.5708, 4.7123, 4.7123], # 3 pos_y
+				[0,	  0,	  0],	  # 4 neg_x
+				[0,	  3.1415, 0]]	  # 5 pos_x
+			camera_name = [
+				"camera_neg_y",
+				"camera_neg_z",
+				"camera_pos_z",
+				"camera_pos_y",
+				"camera_neg_x",
+				"camera_pos_x"]
+			
+			for c in range(0,6):
+				camera_data.append(bpy.data.cameras.new(name=camera_name[c]))
+				camera_object.append(bpy.data.objects.new(name=camera_name[c], object_data=camera_data[c]))
+				bpy.context.scene.objects.link(camera_object[c])
+				camera_object[c].data.lens_unit = 'FOV'
+				camera_object[c].data.angle = 1.5708 # 90deg field of view
+				camera_object[c].data.clip_end = 6000 # make it really far!
+				camera_object[c].location = [0,0,0]
+				camera_object[c].rotation_euler[0] = camera_rotation[c][0] # x
+				camera_object[c].rotation_euler[1] = camera_rotation[c][1] # y
+				camera_object[c].rotation_euler[2] = camera_rotation[c][2] # z
+				camera_object[c].data.draw_size = 1 # probably not necessary
+			
+			return {"FINISHED"}
+
+class RenderCubeMaps(bpy.types.Operator):
+	bl_idname = "hmrm.render_cube_maps"
+	bl_label = "Render Cube Maps"
+	bl_options = {"UNDO"}
+	
+	def invoke(self, context,event):
+		print("RenderCubeMaps()")
+		obs = bpy.data.objects
+		for ob in obs:
+			if "camera_" in ob.name:
+				print("Rendering with " + ob.name + "...")
+				this_camera = ob
+				
+				#bpy.context.object.active_material.emit = 1 # this is how to make the rendering work!!!
+				
+				bpy.context.scene.camera = this_camera
+				bpy.context.scene.render.filepath = "//HWRM_2_" + ob.name
+				bpy.context.scene.render.resolution_x = 1024
+				bpy.context.scene.render.resolution_y = 1024
+				bpy.context.scene.render.tile_x = 8
+				bpy.context.scene.render.tile_y = 8
+				bpy.context.scene.file_format = "TARGA_RAW"
+				bpy.ops.render.render(write_still=True)
+				
+		return {"FINISHED"}
+
+		
+###############################################################################
+#						  ^ ADDED BY DOM2 ^								  #
+###############################################################################
+			
 class FixObjectNames(bpy.types.Operator):
 	bl_idname = "hmrm.name_fixer"
 	bl_label = "Automatically fix duplicate object names"
