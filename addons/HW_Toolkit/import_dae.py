@@ -188,6 +188,7 @@ def makeTextures(name, DAEPath, path):
 	if "DIFF" not in name:
 		print("switching image name to DIFF...")
 		# This is a lazy way of doing it, but it works - may no longer be necessary (Dom2 28-NOV-2016)
+		# We shouldn't do this. Shouldn't assume that a texture is meant to be Diffuse.
 		name = name.replace("_DIFX]","_DIFF]")
 		name = name.replace("_GLOW]","_DIFF]")
 		name = name.replace("_GLOX]","_DIFF]")
@@ -208,27 +209,32 @@ def makeTextures(name, DAEPath, path):
 	bpy.data.images[image_file_name].name = name
 	print("************************************************")
 	
-def makeMaterials(name, textures):
+def makeMaterials(name, textures, matIndex):
 	bpy.data.materials.new(name)
+	bpy.data.materials[name].use_nodes = True
+	newTextureNode = bpy.data.materials[name].node_tree.nodes.new('ShaderNodeTexImage')
+	bpy.data.materials[name].node_tree.links.new(bpy.data.materials[name].node_tree.nodes['Principled BSDF'].inputs['Base Color'],newTextureNode.outputs['Color'])
 	if len(textures) > 0:	
-		bpy.data.materials[name].specular_shader = 'PHONG'
-		bpy.data.materials[name].texture_slots.add()
+		print("Still working on texture import and assignment")		
+		#bpy.data.materials[name].specular_shader = 'PHONG'
+		#bpy.data.materials[name].texture_slots.add()
 		texture_name = textures[0]
-		if "_DIFF" not in texture_name:
-			print("!- makeMaterials() could not find '_DIFF' in texture_name: " + texture_name)
-			texture_name = texture_name.replace("_DIFX]","_DIFF]")
-			texture_name = texture_name.replace("_GLOW]","_DIFF]")
-			texture_name = texture_name.replace("_GLOX]","_DIFF]")
-			texture_name = texture_name.replace("_NORM]","_DIFF]")
-			texture_name = texture_name.replace("_PAIN]","_DIFF]")
-			texture_name = texture_name.replace("_REFL]","_DIFF]")
-			texture_name = texture_name.replace("_REFX]","_DIFF]")
-			texture_name = texture_name.replace("_SPEC]","_DIFF]")
-			texture_name = texture_name.replace("_SPEX]","_DIFF]")
-			texture_name = texture_name.replace("_STRP]","_DIFF]")
-			texture_name = texture_name.replace("_TEAM]","_DIFF]")
-			print("!- makeMaterials() tried to fix it, now using: " + texture_name)
-		bpy.data.materials[name].texture_slots[0].texture = bpy.data.textures[texture_name]
+		bpy.data.materials[name].node_tree.nodes[newTextureNode.name].image = bpy.data.images[texture_name]
+		#if "_DIFF" not in texture_name:
+		#	print("!- makeMaterials() could not find '_DIFF' in texture_name: " + texture_name)
+		#	texture_name = texture_name.replace("_DIFX]","_DIFF]")
+		#	texture_name = texture_name.replace("_GLOW]","_DIFF]")
+		#	texture_name = texture_name.replace("_GLOX]","_DIFF]")
+		#	texture_name = texture_name.replace("_NORM]","_DIFF]")
+		#	texture_name = texture_name.replace("_PAIN]","_DIFF]")
+		#	texture_name = texture_name.replace("_REFL]","_DIFF]")
+		#	texture_name = texture_name.replace("_REFX]","_DIFF]")
+		#	texture_name = texture_name.replace("_SPEC]","_DIFF]")
+		#	texture_name = texture_name.replace("_SPEX]","_DIFF]")
+		#	texture_name = texture_name.replace("_STRP]","_DIFF]")
+		#	texture_name = texture_name.replace("_TEAM]","_DIFF]")
+		#	print("!- makeMaterials() tried to fix it, now using: " + texture_name)
+		#bpy.data.materials[name].texture_slots[0].texture = bpy.data.textures[texture_name]
 	else:
 		print("!- makeMaterials() was given an empty list of textures for mat " + name)
 
@@ -246,7 +252,7 @@ def meshBuilder(matName, Verts, Normals, UVCoords, vertOffset, normOffset, UVoff
 	subMesh.from_pydata(Verts,[],faceTris)
 	if matName is not "None":
 		print("meshBuilder() - appending material '" + matName + "' to submesh '" + subMesh.name + "'")
-		#subMesh.materials.append(bpy.data.materials[matName.lstrip("#")])
+		subMesh.materials.append(bpy.data.materials[matName.lstrip("#")])
 	
 	if smooth:
 		normIndices = []
@@ -273,7 +279,7 @@ def meshBuilder(matName, Verts, Normals, UVCoords, vertOffset, normOffset, UVoff
 				subMesh.uv_layers[coords].data[l].uv = meshUV[l]
 	
 	print("Linking objects...")
-	bpy.context.scene.collection.objects.link(ob)
+	bpy.data.collections[0].objects.link(ob)
 	
 	return ob
 
@@ -286,7 +292,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 		this_lamp = bpy.data.lamps.new(navl_name,'POINT')
 		
 		this_jnt = bpy.data.objects.new(navl_name,this_lamp)
-		jnt_context.scene.collection.objects.link(this_jnt)
+		bpy.data.collections[0].objects.link(this_jnt)
 		pi = math.pi
 		this_jnt.rotation_euler.x = jnt_rotn[0]*(pi/180.0)
 		this_jnt.rotation_euler.y = jnt_rotn[1]*(pi/180.0)
@@ -327,7 +333,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 		this_lamp = bpy.data.lamps.new(lite_name,'POINT')
 		
 		this_jnt = bpy.data.objects.new(lite_name,this_lamp)
-		jnt_context.scene.collection.objects.link(this_jnt)
+		bpy.data.collections[0].objects.link(this_jnt)
 		pi = math.pi
 		this_jnt.rotation_euler.x = jnt_rotn[0]*(pi/180.0)
 		this_jnt.rotation_euler.y = jnt_rotn[1]*(pi/180.0)
@@ -361,7 +367,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 		print("Creating MAT[xx]_PARAM[yy] node " + mat_pex_name)
 		
 		this_jnt = bpy.data.objects.new(mat_pex_name, None)
-		jnt_context.scene.collection.objects.link(this_jnt)
+		bpy.data.collections[0].objects.link(this_jnt)
 		pi = math.pi
 		this_jnt.rotation_euler.x = jnt_rotn[0] * (pi/180.0)
 		this_jnt.rotation_euler.y = jnt_rotn[1] * (pi/180.0)
@@ -386,7 +392,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 	else: # Not a nav light, background light or MAT[xx]_PARAM[yy], so carry on and create a joint...
 		print("Creating joint" + jnt_name)
 		this_jnt = bpy.data.objects.new(jnt_name, None)
-		jnt_context.scene.collection.objects.link(this_jnt)
+		bpy.data.collections[0].objects.link(this_jnt)
 		pi = math.pi
 		this_jnt.rotation_euler.x = jnt_rotn[0] * (pi/180.0)
 		this_jnt.rotation_euler.y = jnt_rotn[1] * (pi/180.0)
@@ -597,6 +603,7 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 		makeTextures(img.attrib["id"],DAE_file_path,img.find(DAEInit).text.lstrip("file://"))
 
 	#Make materials based on the Effects library
+	matIndex = 0
 	for fx in root.find(DAELibEffects).iter(DAEfx):
 		matname = fx.attrib["name"]
 		matTextures = []
@@ -610,7 +617,8 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 				matTextures.append(t.attrib["texture"].rstrip("-image"))
 			# !- may not need to do replacing "DIFF" now... -!
 		
-		#makeMaterials(matname, matTextures)
+		makeMaterials(matname, matTextures, matIndex)
+		matIndex = matIndex + 1
 
 	#Find the mesh data and split the coords into 2D arrays
 
@@ -620,7 +628,7 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 		
 		blankMesh = bpy.data.meshes.new(meshName)
 		ob = bpy.data.objects.new(meshName, blankMesh)
-		bpy.context.scene.collection.objects.link(ob)
+		bpy.data.collections[0].objects.link(ob)
 		
 		print(meshName)	
 		
@@ -835,7 +843,7 @@ def ImportLOD0(DAEfullpath, smoothing_opt):
 			
 			blankMesh = bpy.data.meshes.new(meshName)
 			ob = bpy.data.objects.new(meshName, blankMesh)
-			bpy.context.scene.collection.objects.link(ob)
+			bpy.data.collections[0].objects.link(ob)
 			
 			print("Importing " + geo.attrib["name"] + " as: " + meshName)
 			
