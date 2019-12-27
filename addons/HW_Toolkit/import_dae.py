@@ -98,6 +98,7 @@ DAELibImages = "{http://www.collada.org/2005/11/COLLADASchema}library_images"
 DAEimage = "{http://www.collada.org/2005/11/COLLADASchema}image"
 DAEDiff = "{http://www.collada.org/2005/11/COLLADASchema}diffuse"
 DAETex = "{http://www.collada.org/2005/11/COLLADASchema}texture"
+DAECol = "{http://www.collada.org/2005/11/COLLADASchema}color"
 DAEProfile = "{http://www.collada.org/2005/11/COLLADASchema}profile_COMMON"
 DAETechnique = "{http://www.collada.org/2005/11/COLLADASchema}technique"
 DAEPhong = "{http://www.collada.org/2005/11/COLLADASchema}phong"
@@ -209,12 +210,12 @@ def makeTextures(name, DAEPath, path):
 	bpy.data.images[image_file_name].name = name
 	print("************************************************")
 	
-def makeMaterials(name, textures, matIndex):
-	bpy.data.materials.new(name)
-	bpy.data.materials[name].use_nodes = True
-	newTextureNode = bpy.data.materials[name].node_tree.nodes.new('ShaderNodeTexImage')
-	bpy.data.materials[name].node_tree.links.new(bpy.data.materials[name].node_tree.nodes['Principled BSDF'].inputs['Base Color'],newTextureNode.outputs['Color'])
+def makeMaterials(name, textures, color):
+	bpy.data.materials.new(name)	
 	if len(textures) > 0:	
+		bpy.data.materials[name].use_nodes = True
+		newTextureNode = bpy.data.materials[name].node_tree.nodes.new('ShaderNodeTexImage')
+		bpy.data.materials[name].node_tree.links.new(bpy.data.materials[name].node_tree.nodes['Principled BSDF'].inputs['Base Color'],newTextureNode.outputs['Color'])
 		print("Still working on texture import and assignment")		
 		#bpy.data.materials[name].specular_shader = 'PHONG'
 		#bpy.data.materials[name].texture_slots.add()
@@ -235,6 +236,8 @@ def makeMaterials(name, textures, matIndex):
 		#	texture_name = texture_name.replace("_TEAM]","_DIFF]")
 		#	print("!- makeMaterials() tried to fix it, now using: " + texture_name)
 		#bpy.data.materials[name].texture_slots[0].texture = bpy.data.textures[texture_name]
+	elif len(color) > 0:
+		bpy.data.materials[name].diffuse_color = color[0]
 	else:
 		print("!- makeMaterials() was given an empty list of textures for mat " + name)
 
@@ -420,7 +423,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 			
 		if "seg" in jnt_name.lower(): # SEG[] nodes need special paramters (their names sometimes get too long for Blender)
 			jointProps = jnt_name.split("_")
-			this_jnt.empty_draw_type = dock_seg_type
+			this_jnt.empty_display_type = dock_seg_type
 		
 			for p in jointProps:
 				if "flags" in p.split("[")[0].lower():
@@ -428,7 +431,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 				if "spd" in p.split("[")[0].lower():
 					this_jnt["Speed"] = float(p[4:].rstrip("]"))
 				if "tol" in p.split("[")[0].lower():
-					this_jnt.empty_draw_size = float(p[4:].rstrip("]"))
+					this_jnt.empty_display_size = float(p[4:].rstrip("]"))
 		print("-------------------------------------------")
 	return this_jnt
 
@@ -603,10 +606,10 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 		makeTextures(img.attrib["id"],DAE_file_path,img.find(DAEInit).text.lstrip("file://"))
 
 	#Make materials based on the Effects library
-	matIndex = 0
 	for fx in root.find(DAELibEffects).iter(DAEfx):
 		matname = fx.attrib["name"]
 		matTextures = []
+		matColor = []
 		
 		# Just look for the <diffuse> tag - don't care about the other image files
 		for d in fx.iter(DAEDiff):
@@ -615,10 +618,12 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 			print(d.tag)
 			if t is not None:
 				matTextures.append(t.attrib["texture"].rstrip("-image"))
+			else:
+				matColor.append([float(d.find(DAECol).text.split()[0]), float(d.find(DAECol).text.split()[1]), 
+				float(d.find(DAECol).text.split()[2]), float(d.find(DAECol).text.split()[3])])
 			# !- may not need to do replacing "DIFF" now... -!
 		
-		makeMaterials(matname, matTextures, matIndex)
-		matIndex = matIndex + 1
+		makeMaterials(matname, matTextures, matColor)	
 
 	#Find the mesh data and split the coords into 2D arrays
 
