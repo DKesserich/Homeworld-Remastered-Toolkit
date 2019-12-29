@@ -39,11 +39,11 @@ from bpy.props import StringProperty, BoolProperty, FloatProperty, EnumProperty,
 class HMRMPanelShip(bpy.types.Panel):
 	"""Creates a Panel in the Create window"""
 	bl_label = "Ships"
-	bl_idname = "HMRM_TOOLS_SHIP"
+	bl_idname = "HMRM_PT_tools_ship"
 	bl_space_type = 'VIEW_3D'
-	bl_region_type = 'TOOLS'
-	bl_context = "objectmode"
-	bl_category = "HW Joint Tools"
+	bl_region_type = 'UI'
+	bl_context = 'objectmode'
+	bl_category = 'HW:RM Tools'
 	
 	bpy.types.Scene.ship_name = StringProperty(
 		name = "Name",
@@ -62,24 +62,24 @@ class HMRMPanelShip(bpy.types.Panel):
 		layout = self.layout
 		scn = context.scene
 		
-		layout.label("Ship")
+		layout.label(text="Ship")
 		layout.prop(scn,'flag_uv')
 		layout.prop(scn,'flag_tags')
 		layout.prop(scn, 'ship_name')
 		layout.prop(scn,'lod_num')
 		
-		layout.operator("hmrm.make_ship", "Convert to Ship")
-		layout.operator("hmrm.make_col", "Copy to Collision")
-		layout.operator("hmrm.name_fixer", "Fix Names")
+		layout.operator("hmrm.make_ship")
+		layout.operator("hmrm.make_col")
+		layout.operator("hmrm.name_fixer", text="Fix Names")
 
 class HMRMPanelTools(bpy.types.Panel):
 	"""Creates a Panel in the Create window"""
 	bl_label = "Hardpoints"
-	bl_idname = "HMRM_TOOLS"
+	bl_idname = "HMRM_PT_tools"
 	bl_space_type = 'VIEW_3D'
-	bl_region_type = 'TOOLS'
-	bl_context = "objectmode"
-	bl_category = "HW Joint Tools"
+	bl_region_type = 'UI'
+	bl_context = 'objectmode'
+	bl_category = 'HW:RM Tools'
 	
 	
 	bpy.types.Scene.hardpoint_name = StringProperty(
@@ -106,32 +106,32 @@ class HMRMPanelTools(bpy.types.Panel):
 		layout = self.layout
 		scn = context.scene
 		
-		layout.label("Weapons")
+		layout.label(text="Weapons")
 		layout.prop(scn, 'hardpoint_name')
 		layout.prop(scn,'hardpoint_num')
-		layout.operator("hmrm.make_weapon", "Weapon").createOptions = "Gun"
-		layout.operator("hmrm.make_weapon", "Turret").createOptions = "Turret"
+		layout.operator("hmrm.make_weapon").createOptions = "Gun"
+		layout.operator("hmrm.make_weapon").createOptions = "Turret"
 		
 		layout.separator()
 		
-		layout.label("Weapon Mesh")
+		layout.label(text="Weapon Mesh")
 		layout.prop_search(scn, "parent_ship", scn, "objects")
 		#layout.prop(scn, 'weapon_mesh_name')
 		layout.prop(scn,'hardpoint_num')
-		layout.operator("hmrm.make_weapon", "Mesh to Weapon").createOptions = "Mesh"
+		layout.operator("hmrm.make_weapon").createOptions = "Mesh"
 		
 		layout.separator()
 		
-		layout.label("Utilities & Subsystems")
+		layout.label(text="Utilities & Subsystems")
 		layout.prop(scn,'utility_name')
-		layout.operator("hmrm.make_hardpoint", "Repair").hardName = "RepairPoint"
-		layout.operator("hmrm.make_hardpoint", "Salvage").hardName = "SalvagePoint"
-		layout.operator("hmrm.make_hardpoint","Capture").hardName = "CapturePoint"
-		layout.operator("hmrm.make_subsystem","Resource").subType = "Hardpoint_Resource"
-		layout.operator("hmrm.make_subsystem","Production").subType = "HardpointProduction"
-		layout.operator("hmrm.make_subsystem","Sensors").subType = "HardpointSensors"
-		layout.operator("hmrm.make_subsystem","Target").subType = "Hardpoint_Target"
-		layout.operator("hmrm.make_subsystem","Generic").subType = "HardpointGeneric"
+		layout.operator("hmrm.make_hardpoint").hardName = "RepairPoint"
+		layout.operator("hmrm.make_hardpoint").hardName = "SalvagePoint"
+		layout.operator("hmrm.make_hardpoint").hardName = "CapturePoint"
+		layout.operator("hmrm.make_subsystem").subType = "Hardpoint_Resource"
+		layout.operator("hmrm.make_subsystem").subType = "HardpointProduction"
+		layout.operator("hmrm.make_subsystem").subType = "HardpointSensors"
+		layout.operator("hmrm.make_subsystem").subType = "Hardpoint_Target"
+		layout.operator("hmrm.make_subsystem").subType = "HardpointGeneric"
 		
 		
 		
@@ -139,11 +139,11 @@ class HMRMPanelTools(bpy.types.Panel):
 class HMRMPanelEngines(bpy.types.Panel):
 	"""Creates a Panel in the Create window"""
 	bl_label = "Engines"
-	bl_idname = "HMRM_TOOLS_ENGINES"
+	bl_idname = "HMRM_PT_tools_engines"
 	bl_space_type = 'VIEW_3D'
-	bl_region_type = 'TOOLS'
-	bl_context = "objectmode"
-	bl_category = "HW Joint Tools"
+	bl_region_type = 'UI'
+	bl_context = 'objectmode'
+	bl_category = 'HW:RM Tools'
 	
 	bpy.types.Scene.engine = IntProperty(
 		name = "Engine",
@@ -163,26 +163,26 @@ class HMRMPanelEngines(bpy.types.Panel):
 
 		layout.prop(scn,'engine')
 		
-		layout.label("Large")
-		layout.operator("hmrm.make_engine_large","Convert Selection")
+		layout.label(text="Large")
+		layout.operator("hmrm.make_engine_large")
 		layout.separator()
 		
-		layout.label("Small")		
+		layout.label(text="Small")		
 		layout.prop(scn,'engine_small_flame')
-		layout.operator("hmrm.make_engine_small","Add").useSelected = False
-		layout.operator("hmrm.make_engine_small","Convert Selection").useSelected = True
-		layout.operator("hmrm.make_subsystem","Engine Hardpoint").subType = "Hardpoint_Engine"
+		layout.operator("hmrm.make_engine_small").useSelected = False
+		layout.operator("hmrm.make_engine_small").useSelected = True
+		layout.operator("hmrm.make_subsystem").subType = "Hardpoint_Engine"
 
 
 #Navlight Panel
-class HMRMPanelNavLights(bpy.types.Panel):
+class HMRM_PanelNavLights(bpy.types.Panel):
 	"""Creates a Panel in the Create Window"""
 	bl_label = "Navlights"
-	bl_idName = "HMRM_TOOLS_NAVLIGHTS"
+	bl_idname = "HMRM_PT_tools_navlights"
 	bl_space_type = 'VIEW_3D'
-	bl_region_type = 'TOOLS'
-	bl_context = "objectmode"
-	bl_category = "HW Joint Tools"
+	bl_region_type = 'UI'
+	bl_context = 'objectmode'
+	bl_category = 'HW:RM Tools'
 	
 	bpy.types.Scene.navLightName = StringProperty(
 		name = "Name",
@@ -192,24 +192,24 @@ class HMRMPanelNavLights(bpy.types.Panel):
 		layout = self.layout
 		scn = context.scene
 
-		layout.label("Navlight Name")
+		layout.label(text="Navlight Name")
 		layout.prop(scn,'navLightName')
-		layout.operator("hmrm.convert_navlight","Default").createOption = "default"
-		layout.operator("hmrm.convert_navlight","Bay (No Flicker)").createOption = "nav_baynf"
-		layout.operator("hmrm.convert_navlight","Bay").createOption = "nav_bays"
-		layout.operator("hmrm.convert_navlight","Bridge").createOption = "nav_bridge"
-		layout.operator("hmrm.convert_navlight","Missile").createOption = "nav_missile"
-		layout.operator("hmrm.convert_navlight","Scaffold").createOption = "nav_scaffold"
-		layout.operator("hmrm.convert_navlight","Thruster").createOption = "nav_thrust"
+		layout.operator("hmrm.convert_navlight").createOption = "default"
+		layout.operator("hmrm.convert_navlight").createOption = "nav_baynf"
+		layout.operator("hmrm.convert_navlight").createOption = "nav_bays"
+		layout.operator("hmrm.convert_navlight").createOption = "nav_bridge"
+		layout.operator("hmrm.convert_navlight").createOption = "nav_missile"
+		layout.operator("hmrm.convert_navlight").createOption = "nav_scaffold"
+		layout.operator("hmrm.convert_navlight").createOption = "nav_thrust"
 
 #Docking Panel
-class HMRMPanelDockPaths(bpy.types.Panel):
+class HMRM_PanelDockPaths(bpy.types.Panel):
 	bl_label = "Docking Paths"
-	bl_idName = "HMRM_TOOL_DOCKPATHS"
+	bl_idname = "HMRM_PT_tools_dockpaths"
 	bl_space_type = 'VIEW_3D'
-	bl_region_type = 'TOOLS'
-	bl_context = "objectmode"
-	bl_category = "HW Joint Tools"
+	bl_region_type = 'UI'
+	bl_context = 'objectmode'
+	bl_category = 'HW:RM Tools'
 
 	bpy.types.Scene.pathName = StringProperty(
 		name = "Name",
@@ -219,24 +219,24 @@ class HMRMPanelDockPaths(bpy.types.Panel):
 		layout = self.layout
 		scn = context.scene
 
-		layout.label("Docking Path Name")
+		layout.label(text="Docking Path Name")
 		layout.prop(scn,'pathName')
-		layout.operator("hmrm.make_dock_path","Make Entry Path").createOption = "entryPath"
-		layout.operator("hmrm.make_dock_path","Make Exit Path").createOption = "exitPath"
+		layout.operator("hmrm.make_dock_path").createOption = "entryPath"
+		layout.operator("hmrm.make_dock_path").createOption = "exitPath"
 
 ###############################################################################
 ### v ADDED BY DOM2 v
 ###############################################################################
 
 #Background Panel
-class HMRMPanelBackground(bpy.types.Panel):
+class HMRM_PanelBackground(bpy.types.Panel):
 	"""Creates a Panel in the Create Window"""
 	bl_label = "Backgrounds"
-	bl_idName = "HMRM_TOOLS_BACKGROUND"
+	bl_idname = "HMRM_PT_toolsBackground"
 	bl_space_type = 'VIEW_3D'
-	bl_region_type = 'TOOLS'
-	bl_context = "objectmode"
-	bl_category = "HW Joint Tools"
+	bl_region_type = 'UI'
+	bl_context = 'objectmode'
+	bl_category = 'HW:RM Tools'
 	
 	bpy.types.Scene.bgLightName = StringProperty(
 		name = "Name",
@@ -263,25 +263,25 @@ class HMRMPanelBackground(bpy.types.Panel):
 		scn = context.scene
 
 		# Create background "LITE" lamps (ambient or directional)
-		layout.label("Background Lights")
+		layout.label(text="Background Lights")
 		layout.prop(scn,'bgLightName')
-		layout.operator("hmrm.create_bglight","Create Ambient Light").createOption = "Amb"
-		layout.operator("hmrm.create_bglight","Create Directional Light").createOption = "Dir"
+		layout.operator("hmrm.create_bglight").createOption = "Amb"
+		layout.operator("hmrm.create_bglight").createOption = "Dir"
 		
 		layout.separator()
 		
 		# Create background "MAT[xx]_PARAM[yy]" joints
-		layout.label("Material Parameter Joints")
+		layout.label(text="Material Parameter Joints")
 		layout.prop(scn,'bgMatName')
 		layout.prop(scn,'bgShaderType')
-		layout.operator("hmrm.create_matparams","Create parameter joints")
+		layout.operator("hmrm.create_matparams")
 		
 		layout.separator()
 		
 		# Create cameras for cube maps and render cube maps
-		layout.label("Cube Maps")
-		layout.operator("hmrm.create_bgcameras","Create Cube Map Cameras")
-		layout.operator("hmrm.render_cube_maps","Render Cube Maps")
+		layout.label(text="Cube Maps")
+		layout.operator("hmrm.create_bgcameras")
+		layout.operator("hmrm.render_cube_maps")
 
 ###############################################################################
 ### ^ ADDED BY DOM2 ^
@@ -326,8 +326,8 @@ class MakeDockPath(bpy.types.Operator):
 	bl_idname = "hmrm.make_dock_path"
 	bl_label = "Make Dock Path"
 	bl_options = {"UNDO"}
-	createOption = bpy.props.StringProperty()
-	hasHoldDock = bpy.props.BoolProperty()
+	createOption: bpy.props.StringProperty()
+	hasHoldDock: bpy.props.BoolProperty()
 
 	def invoke(self, context,event):
 		shipRoot = context.scene.objects["ROOT_LOD[0]"]
@@ -482,8 +482,8 @@ class MakeWeaponHardpoint(bpy.types.Operator):
 	bl_idname = "hmrm.make_weapon"
 	bl_label = "Add Weapon Hardpoint"
 	bl_options = {"UNDO"}
-	createOptions = bpy.props.StringProperty()
-	hasRoot = bpy.props.BoolProperty()
+	createOptions: bpy.props.StringProperty()
+	hasRoot: bpy.props.BoolProperty()
 	
 	def invoke(self, context, event):
 	
@@ -591,7 +591,7 @@ class MakeSubSystem(bpy.types.Operator):
 	bl_idname = "hmrm.make_subsystem"
 	bl_label = "Add Subsystem"
 	bl_options = {"UNDO"}
-	subType = bpy.props.StringProperty()	
+	subType: bpy.props.StringProperty()	
 
 	
 	
@@ -635,8 +635,8 @@ class MakeHardpoint(bpy.types.Operator):
 	bl_idname = "hmrm.make_hardpoint"
 	bl_label = "Add Hardpoint"
 	bl_options = {"UNDO"}
-	hardName = bpy.props.StringProperty()
-	hasRoot = bpy.props.BoolProperty()
+	hardName: bpy.props.StringProperty()
+	hasRoot: bpy.props.BoolProperty()
 	
 	def invoke(self, context, event):
 		obs = bpy.data.objects
@@ -700,8 +700,8 @@ class MakeEngineSmall(bpy.types.Operator):
 	bl_idname = "hmrm.make_engine_small"
 	bl_label = "Create Small Engine"
 	bl_options = {"UNDO"}
-	useSelected = bpy.props.BoolProperty()
-	hasRoot = bpy.props.BoolProperty()
+	useSelected: bpy.props.BoolProperty()
+	hasRoot: bpy.props.BoolProperty()
 	
 	def invoke(self, context, event):
 		
@@ -766,8 +766,8 @@ class ConvertToNavlight(bpy.types.Operator):
 	bl_idname = "hmrm.convert_navlight"
 	bl_label = "Convert Lamp to Navlight"
 	bl_options = {"UNDO"}
-	createOption = bpy.props.StringProperty()
-	hasRoot = bpy.props.BoolProperty()
+	createOption: bpy.props.StringProperty()
+	hasRoot: bpy.props.BoolProperty()
 
 	def invoke(self,context,event):
 		
@@ -806,8 +806,8 @@ class CreateBGlight(bpy.types.Operator):
 	bl_idname = "hmrm.create_bglight"
 	bl_label = "Create background light"
 	bl_options = {"UNDO"}
-	createOption = bpy.props.StringProperty()
-	hasRoot = bpy.props.BoolProperty()
+	createOption: bpy.props.StringProperty()
+	hasRoot: bpy.props.BoolProperty()
 
 	def invoke(self,context,event):
 		
@@ -1332,8 +1332,8 @@ class CreateBGcameras(bpy.types.Operator):
 	bl_idname = "hmrm.create_bgcameras"
 	bl_label = "Create background cameras"
 	bl_options = {"UNDO"}
-	createOption = bpy.props.StringProperty()
-	hasRoot = bpy.props.BoolProperty()
+	createOption: bpy.props.StringProperty()
+	hasRoot: bpy.props.BoolProperty()
 
 	def invoke(self,context,event):
 		
@@ -1474,3 +1474,26 @@ class FixObjectNames(bpy.types.Operator):
 
 						
 		return {"FINISHED"}
+
+
+#Register all the classes because 2.8x requires this now
+bpy.utils.register_class(FixObjectNames)
+bpy.utils.register_class(RenderCubeMaps)
+bpy.utils.register_class(CreateBGcameras)
+bpy.utils.register_class(CreateMatParams)
+bpy.utils.register_class(CreateBGlight)
+bpy.utils.register_class(ConvertToNavlight)
+bpy.utils.register_class(MakeEngineSmall)
+bpy.utils.register_class(MakeHardpoint)
+bpy.utils.register_class(MakeSubSystem)
+bpy.utils.register_class(MakeWeaponHardpoint)
+bpy.utils.register_class(MakeShipCOL)
+bpy.utils.register_class(MakeShipLOD)
+bpy.utils.register_class(MakeDockPath)
+bpy.utils.register_class(MakeLargeEngine)		
+bpy.utils.register_class(HMRM_PanelBackground)
+bpy.utils.register_class(HMRM_PanelDockPaths)
+bpy.utils.register_class(HMRM_PanelNavLights)
+bpy.utils.register_class(HMRMPanelEngines)
+bpy.utils.register_class(HMRMPanelTools)		
+bpy.utils.register_class(HMRMPanelShip)
