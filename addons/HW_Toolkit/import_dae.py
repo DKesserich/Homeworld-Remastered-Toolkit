@@ -178,30 +178,8 @@ def makeTextures(name, DAEPath, path):
 	print("Processed image path:")
 	print(image_path)
 	
-	# But sometimes it is not the DIFF (e.g. Kad_Swarmer)...
-	# So correct the image file name
-	if "DIFF" not in image_path:
-		print("switching file name to DIFF...")
-		image_path = image_path[0:len(image_path)-8] + "DIFF" + ".tga"
-		print(image_path)
 	print(name)
-	# And correct the image name (IMG[xxx_DIFF]_FMT[...)
-	if "DIFF" not in name:
-		print("switching image name to DIFF...")
-		# This is a lazy way of doing it, but it works - may no longer be necessary (Dom2 28-NOV-2016)
-		# We shouldn't do this. Shouldn't assume that a texture is meant to be Diffuse.
-		name = name.replace("_DIFX]","_DIFF]")
-		name = name.replace("_GLOW]","_DIFF]")
-		name = name.replace("_GLOX]","_DIFF]")
-		name = name.replace("_NORM]","_DIFF]")
-		name = name.replace("_PAIN]","_DIFF]")
-		name = name.replace("_REFL]","_DIFF]")
-		name = name.replace("_REFX]","_DIFF]")
-		name = name.replace("_SPEC]","_DIFF]")
-		name = name.replace("_SPEX]","_DIFF]")
-		name = name.replace("_STRP]","_DIFF]")
-		name = name.replace("_TEAM]","_DIFF]")
-		print(name)
+	
 	# Now get the image
 	bpy.data.textures.new(name, 'IMAGE')	
 	bpy.data.textures[name].image = bpy.data.images.load(image_path)
@@ -212,30 +190,22 @@ def makeTextures(name, DAEPath, path):
 	
 def makeMaterials(name, textures, color):
 	bpy.data.materials.new(name)	
-	if len(textures) > 0:	
-		bpy.data.materials[name].use_nodes = True
-		newTextureNode = bpy.data.materials[name].node_tree.nodes.new('ShaderNodeTexImage')
-		bpy.data.materials[name].node_tree.links.new(bpy.data.materials[name].node_tree.nodes['Principled BSDF'].inputs['Base Color'],newTextureNode.outputs['Color'])
-		print("Still working on texture import and assignment")		
-		#bpy.data.materials[name].specular_shader = 'PHONG'
-		#bpy.data.materials[name].texture_slots.add()
-		texture_name = textures[0]
-		bpy.data.materials[name].node_tree.nodes[newTextureNode.name].image = bpy.data.images[texture_name]
-		#if "_DIFF" not in texture_name:
-		#	print("!- makeMaterials() could not find '_DIFF' in texture_name: " + texture_name)
-		#	texture_name = texture_name.replace("_DIFX]","_DIFF]")
-		#	texture_name = texture_name.replace("_GLOW]","_DIFF]")
-		#	texture_name = texture_name.replace("_GLOX]","_DIFF]")
-		#	texture_name = texture_name.replace("_NORM]","_DIFF]")
-		#	texture_name = texture_name.replace("_PAIN]","_DIFF]")
-		#	texture_name = texture_name.replace("_REFL]","_DIFF]")
-		#	texture_name = texture_name.replace("_REFX]","_DIFF]")
-		#	texture_name = texture_name.replace("_SPEC]","_DIFF]")
-		#	texture_name = texture_name.replace("_SPEX]","_DIFF]")
-		#	texture_name = texture_name.replace("_STRP]","_DIFF]")
-		#	texture_name = texture_name.replace("_TEAM]","_DIFF]")
-		#	print("!- makeMaterials() tried to fix it, now using: " + texture_name)
-		#bpy.data.materials[name].texture_slots[0].texture = bpy.data.textures[texture_name]
+	if len(textures) > 0:
+		yoffset = 400
+		for t in textures:
+			bpy.data.materials[name].use_nodes = True
+			newTextureNode = bpy.data.materials[name].node_tree.nodes.new('ShaderNodeTexImage')
+			newTextureNode.location = mathutils.Vector((-400,yoffset))
+			bpy.data.materials[name].node_tree.nodes[newTextureNode.name].image = bpy.data.images[t]
+			if "_DIFF" in t:
+				bpy.data.materials[name].node_tree.links.new(bpy.data.materials[name].node_tree.nodes['Principled BSDF'].inputs['Base Color'],newTextureNode.outputs['Color'])
+			elif "_GLOW" in t:
+				bpy.data.materials[name].node_tree.links.new(bpy.data.materials[name].node_tree.nodes['Principled BSDF'].inputs['Emission'],newTextureNode.outputs['Color'])
+			elif "_SPEC" in t:
+				bpy.data.materials[name].node_tree.nodes[newTextureNode.name].image.colorspace_settings.name = 'Non-Color'
+				bpy.data.materials[name].node_tree.links.new(bpy.data.materials[name].node_tree.nodes['Principled BSDF'].inputs['Specular'],newTextureNode.outputs['Color'])
+				bpy.data.materials[name].node_tree.links.new(bpy.data.materials[name].node_tree.nodes['Principled BSDF'].inputs['Roughness'],newTextureNode.outputs['Color'])
+			yoffset = yoffset-250		
 	elif len(color) > 0:
 		bpy.data.materials[name].diffuse_color = color[0]
 	else:
@@ -292,7 +262,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 	if 'navl' in jnt_name.lower(): # nav lights are treated in a special way, they are made into lamps with custom parameters
 		navl_name = "NAVL[" + jnt_name.split("]")[0].split("[")[1] + "]"
 		print("Creating nav light " + navl_name)
-		this_lamp = bpy.data.lamps.new(navl_name,'POINT')
+		this_lamp = bpy.data.lights.new(navl_name,'POINT')
 		
 		this_jnt = bpy.data.objects.new(navl_name,this_lamp)
 		bpy.data.collections[0].objects.link(this_jnt)
@@ -313,7 +283,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 			p = p + "]"
 			print(p)
 			if p.split("[")[0].lower() == 'sz':
-				this_lamp.energy = float(p[3:].rstrip("]").split("]")[0])
+				this_lamp.energy = float(p[3:].rstrip("]").split("]")[0])*100
 			elif p.split("[")[0].lower() == 'ph':
 				this_lamp["Phase"] = float(p[3:].rstrip("]").split("]")[0])
 			elif p.split("[")[0].lower() == 'fr':
@@ -324,6 +294,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 				this_lamp.color[1] = float(rgb[1])
 				this_lamp.color[2] = float(rgb[2])
 			elif p.split("[")[0].lower() == 'dist':
+				this_lamp.use_custom_distance = True
 				this_lamp.distance = float(p[5:].rstrip("]").split("]")[0])
 			elif p.split("[")[0].lower() == 'flags':
 				this_lamp["Flags"] = p[6:].rstrip("]").split("]")[0]
@@ -333,7 +304,7 @@ def CreateJoint(jnt_name,jnt_locn,jnt_rotn,jnt_context, dock_seg_type):
 	elif 'lite[' in jnt_name.lower(): # background lights are treated in a special way, they are made into lamps with custom parameters
 		lite_name = "LITE[" + jnt_name.split("]")[0].split("[")[1] + "]"
 		print("Creating lite " + lite_name)
-		this_lamp = bpy.data.lamps.new(lite_name,'POINT')
+		this_lamp = bpy.data.lights.new(lite_name,'POINT')
 		
 		this_jnt = bpy.data.objects.new(lite_name,this_lamp)
 		bpy.data.collections[0].objects.link(this_jnt)
@@ -492,7 +463,7 @@ def CheckForChildren(node,context,root):
 				CheckForChildren(item,context,root)
 
 def CheckForNavSubParams(navlight,name,context):
-	this_lamp = bpy.data.lamps[name]
+	this_lamp = bpy.data.lights[name]
 	# Check each item under the nav light for "SUB_PARAMS"
 	for item in navlight:
 		if "node" in item.tag:
@@ -605,20 +576,21 @@ def ImportDAE(DAEfullpath, smoothing_opt, dock_opt, goblins_opt):
 			print("This appears to be a RODOH DAE. _FMT[] tags will be lost from textures - sorry!")
 		makeTextures(img.attrib["id"],DAE_file_path,img.find(DAEInit).text.lstrip("file://"))
 
-	#Make materials based on the Effects library
-	for fx in root.find(DAELibEffects).iter(DAEfx):
+	#Make materials based on the Effects library	
+	for fx in root.find(DAELibEffects).iter(DAEfx):		
 		matname = fx.attrib["name"]
 		matTextures = []
 		matColor = []
 		
 		# Just look for the <diffuse> tag - don't care about the other image files
-		for d in fx.iter(DAEDiff):
-			t = d.find(DAETex)
-			print(d)
-			print(d.tag)
-			if t is not None:
-				matTextures.append(t.attrib["texture"].rstrip("-image"))
-			else:
+		#for d in fx.iter(DAEDiff):
+		#	t = d.find(DAETex)
+			#print(d)
+			#print(d.tag)
+		for t in fx.iter(DAETex):
+			matTextures.append(t.attrib["texture"].rstrip("-image"))
+		if len(matTextures) == 0:
+			for d in fx.iter(DAEDiff):
 				matColor.append([float(d.find(DAECol).text.split()[0]), float(d.find(DAECol).text.split()[1]), 
 				float(d.find(DAECol).text.split()[2]), float(d.find(DAECol).text.split()[3])])
 			# !- may not need to do replacing "DIFF" now... -!
