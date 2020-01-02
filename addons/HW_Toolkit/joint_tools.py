@@ -68,8 +68,8 @@ class HMRMPanelShip(bpy.types.Panel):
 		layout.prop(scn, 'ship_name')
 		layout.prop(scn,'lod_num')
 		
-		layout.operator("hmrm.make_ship")
-		layout.operator("hmrm.make_col")
+		layout.operator("hmrm.make_ship", text="Convert to Ship")
+		layout.operator("hmrm.make_col", text = "Copy to Collision")
 		layout.operator("hmrm.name_fixer", text="Fix Names")
 
 class HMRMPanelTools(bpy.types.Panel):
@@ -109,8 +109,8 @@ class HMRMPanelTools(bpy.types.Panel):
 		layout.label(text="Weapons")
 		layout.prop(scn, 'hardpoint_name')
 		layout.prop(scn,'hardpoint_num')
-		layout.operator("hmrm.make_weapon").createOptions = "Gun"
-		layout.operator("hmrm.make_weapon").createOptions = "Turret"
+		layout.operator("hmrm.make_weapon", text = "Weapon").createOptions = "Gun"
+		layout.operator("hmrm.make_weapon", text = "Turret").createOptions = "Turret"
 		
 		layout.separator()
 		
@@ -118,20 +118,20 @@ class HMRMPanelTools(bpy.types.Panel):
 		layout.prop_search(scn, "parent_ship", scn, "objects")
 		#layout.prop(scn, 'weapon_mesh_name')
 		layout.prop(scn,'hardpoint_num')
-		layout.operator("hmrm.make_weapon").createOptions = "Mesh"
+		layout.operator("hmrm.make_weapon", text = "Mesh to Weapon").createOptions = "Mesh"
 		
 		layout.separator()
 		
 		layout.label(text="Utilities & Subsystems")
 		layout.prop(scn,'utility_name')
-		layout.operator("hmrm.make_hardpoint").hardName = "RepairPoint"
-		layout.operator("hmrm.make_hardpoint").hardName = "SalvagePoint"
-		layout.operator("hmrm.make_hardpoint").hardName = "CapturePoint"
-		layout.operator("hmrm.make_subsystem").subType = "Hardpoint_Resource"
-		layout.operator("hmrm.make_subsystem").subType = "HardpointProduction"
-		layout.operator("hmrm.make_subsystem").subType = "HardpointSensors"
-		layout.operator("hmrm.make_subsystem").subType = "Hardpoint_Target"
-		layout.operator("hmrm.make_subsystem").subType = "HardpointGeneric"
+		layout.operator("hmrm.make_hardpoint", text="Repair").hardName = "RepairPoint"
+		layout.operator("hmrm.make_hardpoint", text="Salvage").hardName = "SalvagePoint"
+		layout.operator("hmrm.make_hardpoint", text="Capture").hardName = "CapturePoint"
+		layout.operator("hmrm.make_subsystem", text="Resource").subType = "Hardpoint_Resource"
+		layout.operator("hmrm.make_subsystem", text="Production").subType = "HardpointProduction"
+		layout.operator("hmrm.make_subsystem", text="Sensors").subType = "HardpointSensors"
+		layout.operator("hmrm.make_subsystem", text="Target").subType = "Hardpoint_Target"
+		layout.operator("hmrm.make_subsystem", text="Generic").subType = "HardpointGeneric"
 		
 		
 		
@@ -164,14 +164,14 @@ class HMRMPanelEngines(bpy.types.Panel):
 		layout.prop(scn,'engine')
 		
 		layout.label(text="Large")
-		layout.operator("hmrm.make_engine_large")
+		layout.operator("hmrm.make_engine_large", text="Convert Selection")
 		layout.separator()
 		
 		layout.label(text="Small")		
 		layout.prop(scn,'engine_small_flame')
-		layout.operator("hmrm.make_engine_small").useSelected = False
-		layout.operator("hmrm.make_engine_small").useSelected = True
-		layout.operator("hmrm.make_subsystem").subType = "Hardpoint_Engine"
+		layout.operator("hmrm.make_engine_small", text="Add").useSelected = False
+		layout.operator("hmrm.make_engine_small", text="Convert Selection").useSelected = True
+		layout.operator("hmrm.make_subsystem", text="Engine Hardpoint").subType = "Hardpoint_Engine"
 
 
 #Navlight Panel
@@ -194,13 +194,13 @@ class HMRM_PanelNavLights(bpy.types.Panel):
 
 		layout.label(text="Navlight Name")
 		layout.prop(scn,'navLightName')
-		layout.operator("hmrm.convert_navlight").createOption = "default"
-		layout.operator("hmrm.convert_navlight").createOption = "nav_baynf"
-		layout.operator("hmrm.convert_navlight").createOption = "nav_bays"
-		layout.operator("hmrm.convert_navlight").createOption = "nav_bridge"
-		layout.operator("hmrm.convert_navlight").createOption = "nav_missile"
-		layout.operator("hmrm.convert_navlight").createOption = "nav_scaffold"
-		layout.operator("hmrm.convert_navlight").createOption = "nav_thrust"
+		layout.operator("hmrm.convert_navlight", text="Default").createOption = "default"
+		layout.operator("hmrm.convert_navlight", text="Bay (No Flicker)").createOption = "nav_baynf"
+		layout.operator("hmrm.convert_navlight", text="Bay").createOption = "nav_bays"
+		layout.operator("hmrm.convert_navlight", text="Bridge").createOption = "nav_bridge"
+		layout.operator("hmrm.convert_navlight", text="Missile").createOption = "nav_missile"
+		layout.operator("hmrm.convert_navlight", text="Scaffold").createOption = "nav_scaffold"
+		layout.operator("hmrm.convert_navlight", text="Thruster").createOption = "nav_thrust"
 
 #Docking Panel
 class HMRM_PanelDockPaths(bpy.types.Panel):
@@ -221,8 +221,8 @@ class HMRM_PanelDockPaths(bpy.types.Panel):
 
 		layout.label(text="Docking Path Name")
 		layout.prop(scn,'pathName')
-		layout.operator("hmrm.make_dock_path").createOption = "entryPath"
-		layout.operator("hmrm.make_dock_path").createOption = "exitPath"
+		layout.operator("hmrm.make_dock_path", text="Make Entry Path").createOption = "entryPath"
+		layout.operator("hmrm.make_dock_path", text="Make Exit Path").createOption = "exitPath"
 
 ###############################################################################
 ### v ADDED BY DOM2 v
@@ -265,8 +265,8 @@ class HMRM_PanelBackground(bpy.types.Panel):
 		# Create background "LITE" lamps (ambient or directional)
 		layout.label(text="Background Lights")
 		layout.prop(scn,'bgLightName')
-		layout.operator("hmrm.create_bglight").createOption = "Amb"
-		layout.operator("hmrm.create_bglight").createOption = "Dir"
+		layout.operator("hmrm.create_bglight", text="Create Ambient Light").createOption = "Amb"
+		layout.operator("hmrm.create_bglight", text="Create Directional Light").createOption = "Dir"
 		
 		layout.separator()
 		
@@ -274,14 +274,14 @@ class HMRM_PanelBackground(bpy.types.Panel):
 		layout.label(text="Material Parameter Joints")
 		layout.prop(scn,'bgMatName')
 		layout.prop(scn,'bgShaderType')
-		layout.operator("hmrm.create_matparams")
+		layout.operator("hmrm.create_matparams", text = "Create parameter joints")
 		
 		layout.separator()
 		
 		# Create cameras for cube maps and render cube maps
 		layout.label(text="Cube Maps")
-		layout.operator("hmrm.create_bgcameras")
-		layout.operator("hmrm.render_cube_maps")
+		layout.operator("hmrm.create_bgcameras", text = "Create Cube Map Cameras")
+		layout.operator("hmrm.render_cube_maps", text="Render Cube Maps")
 
 ###############################################################################
 ### ^ ADDED BY DOM2 ^
@@ -295,15 +295,15 @@ class MakeLargeEngine(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		shipRoot = context.scene.objects["ROOT_LOD[0]"]
-		cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+		cursorLoc = (shipRoot.matrix_world.inverted() @ bpy.context.scene.cursor.location)
 		localCoords = shipRoot.matrix_world.inverted()
 
 		nozzleJoint = bpy.data.objects.new("JNT[EngineNozzle"+str(context.scene.engine)+"]",None)
-		context.scene.collection.objects.link(nozzleJoint)
+		bpy.data.collections[0].objects.link(nozzleJoint)
 		nozzleJoint.location = localCoords * bpy.context.selected_objects[0].location
 		nozzleJoint.parent = bpy.data.objects['ROOT_LOD[0]']
 		axisJoint = bpy.data.objects.new("AXIS[EngineNozzle"+str(context.scene.engine)+"]",None)
-		context.scene.collection.objects.link(axisJoint)
+		bpy.data.collections[0].objects.link(axisJoint)
 		axisJoint.parent = nozzleJoint
 
 		engineGlowMat = bpy.data.materials.new("MATGLOW[HODOR_Glow]")
@@ -331,7 +331,7 @@ class MakeDockPath(bpy.types.Operator):
 
 	def invoke(self, context,event):
 		shipRoot = context.scene.objects["ROOT_LOD[0]"]
-		cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+		cursorLoc = (shipRoot.matrix_world.inverted() @ bpy.context.scene.cursor.location)
 		localCoords = shipRoot.matrix_world.inverted()
 		
 		if bpy.data.objects.find('HOLD_DOCK') != -1:
@@ -341,14 +341,14 @@ class MakeDockPath(bpy.types.Operator):
 		
 		if self.hasHoldDock == False:
 			holdDock = bpy.data.objects.new("HOLD_DOCK",None)
-			bpy.context.scene.collection.objects.link(holdDock)
+			bpy.data.collections[0].objects.link(holdDock)
 			holdDock.parent = bpy.data.objects['ROOT_LOD[0]']
 		else:
 			holdDock = bpy.data.objects['HOLD_DOCK']
 
 		if self.createOption == "entryPath":
 			pathRoot = bpy.data.objects.new("DOCK["+context.scene.pathName+"]",None)
-			bpy.context.scene.collection.objects.link(pathRoot)
+			bpy.data.collections[0].objects.link(pathRoot)
 			pathRoot["Fam"] = "Ship Type"
 			pathRoot["Link"] = "Linked Paths"
 			pathRoot["Flags"] = "None"
@@ -357,7 +357,7 @@ class MakeDockPath(bpy.types.Operator):
 
 			for x in range(0,6):
 				seg = bpy.data.objects.new("SEG["+str(x)+"]",None)
-				bpy.context.scene.collection.objects.link(seg)
+				bpy.data.collections[0].objects.link(seg)
 				seg.parent = pathRoot
 				seg.empty_draw_type = "SPHERE"
 				seg["Speed"] = 50
@@ -366,7 +366,7 @@ class MakeDockPath(bpy.types.Operator):
 
 		if self.createOption == "exitPath":
 			pathRoot = bpy.data.objects.new("DOCK["+context.scene.pathName+"Ex]",None)
-			bpy.context.scene.collection.objects.link(pathRoot)
+			bpy.data.collections[0].objects.link(pathRoot)
 			pathRoot["Fam"] = "Ship Type"
 			pathRoot["Link"] = "Linked Paths"
 			pathRoot["Flags"] = "Exit"
@@ -375,7 +375,7 @@ class MakeDockPath(bpy.types.Operator):
 
 			for x in range(0,3):
 				seg = bpy.data.objects.new("SEG["+str(x)+"]",None)
-				bpy.context.scene.collection.objects.link(seg)
+				bpy.data.collections[0].objects.link(seg)
 				seg.parent = pathRoot
 				seg.empty_draw_type = "SPHERE"				
 				seg["Speed"] = 50
@@ -408,16 +408,16 @@ class MakeShipLOD(bpy.types.Operator):
 				
 			if context.scene.lod_num == 0:
 				info_jnt = bpy.data.objects.new(jntName_info, None)
-				context.scene.collection.objects.link(info_jnt)
+				bpy.data.collections[0].objects.link(info_jnt)
 				class_jnt = bpy.data.objects.new(jntName_class, None)
-				context.scene.collection.objects.link(class_jnt)
+				bpy.data.collections[0].objects.link(class_jnt)
 				uv_joint = bpy.data.objects.new(jntName_uv, None)
-				context.scene.collection.objects.link(uv_joint)
+				bpy.data.collections[0].objects.link(uv_joint)
 				ship_jnt = bpy.data.objects.new(jntName, None)
-				context.scene.collection.objects.link(ship_jnt)
+				bpy.data.collections[0].objects.link(ship_jnt)
 				
 			LOD_jnt = bpy.data.objects.new(jntName_LOD, None)
-			context.scene.collection.objects.link(LOD_jnt)
+			bpy.data.collections[0].objects.link(LOD_jnt)
 			LOD_jnt.rotation_euler.x = 1.57079633
 
 			if context.scene.lod_num == 0:
@@ -456,10 +456,10 @@ class MakeShipCOL(bpy.types.Operator):
 			colMesh = "COL[Root]"
 			
 			col_jnt = bpy.data.objects.new(colName, None)
-			context.scene.collection.objects.link(col_jnt)
+			bpy.data.collections[0].objects.link(col_jnt)
 			
 			#col_obj = bpy.context.selected_objects[0].copy()
-			#context.scene.collection.objects.link(col_obj)
+			#bpy.data.collections[0].objects.link(col_obj)
 			bpy.ops.object.duplicate()
 			col_obj = bpy.context.active_object
 			#bpy.ops.object.select_all(action='DESELECT')
@@ -469,7 +469,7 @@ class MakeShipCOL(bpy.types.Operator):
 			col_obj.data.name = colMesh
 			col_obj.parent = col_jnt			
 			
-			col_jnt.location = bpy.context.scene.cursor_location
+			col_jnt.location = bpy.context.scene.cursor.location
 			col_jnt.rotation_euler.x = 1.57079633
 			col_jnt.location.y = 0
 			col_jnt.location.z = 0
@@ -507,34 +507,34 @@ class MakeWeaponHardpoint(bpy.types.Operator):
 			jntName_Muz = "JNT[Weapon_" + tempName +"_Muzzle]"
 			
 			shipRoot = context.scene.objects["ROOT_LOD[0]"]
-			cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+			cursorLoc = (shipRoot.matrix_world.inverted() @ bpy.context.scene.cursor.location)
 			localCoords = shipRoot.matrix_world.inverted()
 			
 			if self.createOptions == "Turret":
 				jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
 				weapon_lat = bpy.data.objects.new(jntName_Lat, None)
-				context.scene.collection.objects.link(weapon_lat)
+				bpy.data.collections[0].objects.link(weapon_lat)
 			
 			if self.createOptions == "Mesh":
 				jntName_Mesh = "JNT["+ context.scene.hardpoint_name +"."+str(context.scene.hardpoint_num)+"]"
 				weapon_mesh = bpy.data.objects.new(jntName_Mesh, None)
-				context.scene.collection.objects.link(weapon_mesh)
+				bpy.data.collections[0].objects.link(weapon_mesh)
 				
 				jntName_Lat = "JNT[Weapon_" + tempName + "_Latitude]"
 				weapon_lat = bpy.data.objects.new(jntName_Lat, None)
-				context.scene.collection.objects.link(weapon_lat)
+				bpy.data.collections[0].objects.link(weapon_lat)
 			
 			weapon_pos = bpy.data.objects.new(jntName_Pos, None)
-			context.scene.collection.objects.link(weapon_pos)
+			bpy.data.collections[0].objects.link(weapon_pos)
 			
 			weapon_dir = bpy.data.objects.new(jntName_Dir, None)
-			context.scene.collection.objects.link(weapon_dir)
+			bpy.data.collections[0].objects.link(weapon_dir)
 			
 			weapon_rest = bpy.data.objects.new(jntName_Rest, None)
-			context.scene.collection.objects.link(weapon_rest)
+			bpy.data.collections[0].objects.link(weapon_rest)
 			
 			weapon_muzzle = bpy.data.objects.new(jntName_Muz, None)
-			context.scene.collection.objects.link(weapon_muzzle)
+			bpy.data.collections[0].objects.link(weapon_muzzle)
 			
 			#Following standard Blender workflow, create the object at the 3D Cursor location
 			#Also, since the Direction and Rest joints are in local space for Postion,
@@ -543,8 +543,8 @@ class MakeWeaponHardpoint(bpy.types.Operator):
 			
 			if self.createOptions == "Mesh":
 				#when converting a mesh to a turret, create the weapon pos at the selected mesh's root
-				weapon_mesh.location = localCoords * bpy.context.selected_objects[0].location
-				weapon_pos.location = localCoords * bpy.context.selected_objects[0].location
+				weapon_mesh.location = localCoords @ bpy.context.selected_objects[0].location
+				weapon_pos.location = localCoords @ bpy.context.selected_objects[0].location
 			else:
 				weapon_pos.location = cursorLoc
 			weapon_dir.location.xyz = [0,10,0]
@@ -600,7 +600,7 @@ class MakeSubSystem(bpy.types.Operator):
 		
 		if bpy.data.objects.get("ROOT_LOD[0]") is not None:
 			shipRoot = context.scene.objects["ROOT_LOD[0]"]
-			cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+			cursorLoc = (shipRoot.matrix_world.inverted() @ bpy.context.scene.cursor.location)
 			localCoords = shipRoot.matrix_world.inverted()
 
 			jntName_Pos = "JNT["+self.subType+"_Position]"
@@ -608,11 +608,11 @@ class MakeSubSystem(bpy.types.Operator):
 			jntName_Rest = "JNT["+self.subType+"_Rest]"
 
 			subsys_pos = bpy.data.objects.new(jntName_Pos, None)
-			context.scene.collection.objects.link(subsys_pos)
+			bpy.data.collections[0].objects.link(subsys_pos)
 			subsys_dir = bpy.data.objects.new(jntName_Dir,None)
-			context.scene.collection.objects.link(subsys_dir)
+			bpy.data.collections[0].objects.link(subsys_dir)
 			subsys_rest = bpy.data.objects.new(jntName_Rest,None)
-			context.scene.collection.objects.link(subsys_rest)
+			bpy.data.collections[0].objects.link(subsys_rest)
 
 			
 			#if self.subType != "Hardpoint_Engine":
@@ -649,7 +649,7 @@ class MakeHardpoint(bpy.types.Operator):
 		if self.hasRoot:
 			
 			shipRoot = context.scene.objects["ROOT_LOD[0]"]
-			cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+			cursorLoc = (shipRoot.matrix_world.inverted() @ bpy.context.scene.cursor.location)
 			localCoords = shipRoot.matrix_world.inverted()
 
 			jntName_Pos = "JNT[" + self.hardName + str(context.scene.utility_name) + "]"
@@ -659,17 +659,17 @@ class MakeHardpoint(bpy.types.Operator):
 			
 			
 			hardp_pos = bpy.data.objects.new(jntName_Pos, None)
-			context.scene.collection.objects.link(hardp_pos)
+			bpy.data.collections[0].objects.link(hardp_pos)
 			
 			hardp_head = bpy.data.objects.new(jntName_Head, None)
-			context.scene.collection.objects.link(hardp_head)
+			bpy.data.collections[0].objects.link(hardp_head)
 			
 			
 			hardp_left = bpy.data.objects.new(jntName_Left, None)
-			context.scene.collection.objects.link(hardp_left)
+			bpy.data.collections[0].objects.link(hardp_left)
 			
 			hardp_up = bpy.data.objects.new(jntName_Up, None)
-			context.scene.collection.objects.link(hardp_up)
+			bpy.data.collections[0].objects.link(hardp_up)
 			
 			hardp_pos.parent = context.scene.objects["ROOT_LOD[0]"]
 			hardp_head.parent = hardp_pos
@@ -716,14 +716,14 @@ class MakeEngineSmall(bpy.types.Operator):
 			jntShape = "ETSH[EngineShape" + str(context.scene.engine) + "]"
 
 			shipRoot = context.scene.objects["ROOT_LOD[0]"]
-			cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+			cursorLoc = (shipRoot.matrix_world.inverted() @ bpy.context.scene.cursor.location)
 			localCoords = shipRoot.matrix_world.inverted()
 			
 			engine_nozzle = bpy.data.objects.new(jntNozzle, None)
-			context.scene.collection.objects.link(engine_nozzle)
+			bpy.data.collections[0].objects.link(engine_nozzle)
 			
 			engine_burn = bpy.data.objects.new(jntBurn, None)
-			context.scene.collection.objects.link(engine_burn)
+			bpy.data.collections[0].objects.link(engine_burn)
 			
 			if self.useSelected:
 				bpy.context.selected_objects[0].name = jntShape
@@ -732,7 +732,7 @@ class MakeEngineSmall(bpy.types.Operator):
 				faces = [(2,3,1,0)]
 				engine_mesh = bpy.data.meshes.new(jntShape)
 				engine_shape = bpy.data.objects.new(jntShape,engine_mesh)
-				context.scene.collection.objects.link(engine_shape)
+				bpy.data.collections[0].objects.link(engine_shape)
 				engine_shape.parent = engine_nozzle
 				engine_mesh.from_pydata(verts,[],faces)
 				engine_mesh.update(calc_edges=True)
@@ -743,7 +743,7 @@ class MakeEngineSmall(bpy.types.Operator):
 			for f in range (0, context.scene.engine_small_flame):
 				flameDiv = "Flame[0]_Div[" + str(f) + "]"
 				flame_div = bpy.data.objects.new(flameDiv, None)
-				context.scene.collection.objects.link(flame_div)
+				bpy.data.collections[0].objects.link(flame_div)
 				
 				flame_div.parent = engine_burn
 				flame_div.location.z = 0-f
@@ -751,7 +751,7 @@ class MakeEngineSmall(bpy.types.Operator):
 			
 			#engine_nozzle.rotation_euler.x = 1.57079633
 			if self.useSelected:
-				engine_nozzle.location = localCoords * bpy.context.selected_objects[0].location
+				engine_nozzle.location = localCoords @ bpy.context.selected_objects[0].location
 				bpy.context.selected_objects[0].parent = engine_nozzle
 				bpy.context.selected_objects[0].location.xyz = [0,0,0]
 			else:
@@ -778,10 +778,10 @@ class ConvertToNavlight(bpy.types.Operator):
 				
 			if self.hasRoot:
 				shipRoot = context.scene.objects["ROOT_LOD[0]"]
-				cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+				cursorLoc = (shipRoot.matrix_world.inverted() @ bpy.context.scene.cursor.location)
 				localCoords = shipRoot.matrix_world.inverted()
 
-				if bpy.context.active_object.type == "LAMP":
+				if bpy.context.active_object.type == "LIGHT":
 					navLight = bpy.context.active_object
 
 					navLight.name = 'NAVL['+context.scene.navLightName+']'
@@ -791,7 +791,7 @@ class ConvertToNavlight(bpy.types.Operator):
 					navLight.data["Flags"] = "None"
 
 					navLight.parent = bpy.data.objects['ROOT_LOD[0]']
-					navLight.location = localCoords * navLight.location
+					navLight.location = localCoords @ navLight.location
 
 			else:
 				self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")
@@ -808,6 +808,7 @@ class CreateBGlight(bpy.types.Operator):
 	bl_options = {"UNDO"}
 	createOption: bpy.props.StringProperty()
 	hasRoot: bpy.props.BoolProperty()
+	hasHolder: bpy.props.BoolProperty()
 
 	def invoke(self,context,event):
 		
@@ -822,19 +823,19 @@ class CreateBGlight(bpy.types.Operator):
 			if not self.hasHolder:
 				# create HOLD_LITE
 				holdLite = bpy.data.objects.new("HOLD_LITE",None)
-				bpy.context.scene.collection.objects.link(holdLite)
+				bpy.data.collections[0].objects.link(holdLite)
 				holdLite.parent = bpy.data.objects['ROOT_LOD[0]']
 
 			if self.hasRoot:
 				
 				liteRoot = context.scene.objects["HOLD_LITE"]
-				cursorLoc = (shipRoot.matrix_world.inverted() * bpy.context.scene.cursor_location)
+				cursorLoc = (shipRoot.matrix_world.inverted() @ bpy.context.scene.cursor.location)
 				localCoords = liteRoot.matrix_world.inverted()
 				
 				# Create a lamp, name it and parent it to HOLD_LITE
-				lamp_data = bpy.data.lamps.new(name="LITE["+context.scene.bgLightName+"]", type='POINT')
+				lamp_data = bpy.data.lights.new(name="LITE["+context.scene.bgLightName+"]", type='POINT')
 				lamp_object = bpy.data.objects.new(name="LITE["+context.scene.bgLightName+"]", object_data=lamp_data)
-				context.scene.collection.objects.link(lamp_object)
+				bpy.data.collections[0].objects.link(lamp_object)
 				lamp_object.location = cursorLoc
 				lamp_object.parent = bpy.data.objects['HOLD_LITE']
 				
@@ -843,8 +844,8 @@ class CreateBGlight(bpy.types.Operator):
 				lamp_object.data["Atten"] = "None, 1"
 				
 				# Select it make active
-				lamp_object.select = True
-				context.scene.objects.active = lamp_object				
+				lamp_object.select_set(True)
+				context.view_layer.objects.active = lamp_object				
 				
 			else:
 				self.report({'ERROR'}, "No root found. Please use Convert to Ship, or manually create ROOT_LOD[0]")					
@@ -1304,7 +1305,7 @@ class CreateMatParams(bpy.types.Operator):
 			self.hasHoldParams = True
 		else:
 			holdParams = bpy.data.objects.new("HOLD_PARAMS",None)
-			bpy.context.scene.collection.objects.link(holdParams)
+			bpy.data.collections[0].objects.link(holdParams)
 			holdParams.parent = bpy.data.objects['ROOT_LOD[0]']
 		
 		# Create the new joints at 0,0,0 and parent them
@@ -1314,7 +1315,7 @@ class CreateMatParams(bpy.types.Operator):
 			# Creating the joint
 			jnt_name = "MAT[" + context.scene.bgMatName + "]_PARAM[" + p + "]_Type[RGBA]"
 			jnt_mat_pex = bpy.data.objects.new(jnt_name, None)
-			context.scene.collection.objects.link(jnt_mat_pex)
+			bpy.data.collections[0].objects.link(jnt_mat_pex)
 			jnt_mat_pex.location.xyz = [0,0,0]
 			jnt_mat_pex.parent = bpy.data.objects['HOLD_PARAMS']
 			# Populate the custom properties
@@ -1359,7 +1360,7 @@ class CreateBGcameras(bpy.types.Operator):
 			for c in range(0,6):
 				camera_data.append(bpy.data.cameras.new(name=camera_name[c]))
 				camera_object.append(bpy.data.objects.new(name=camera_name[c], object_data=camera_data[c]))
-				bpy.context.scene.collection.objects.link(camera_object[c])
+				bpy.data.collections[0].objects.link(camera_object[c])
 				camera_object[c].data.lens_unit = 'FOV'
 				camera_object[c].data.angle = 1.5708 # 90deg field of view
 				camera_object[c].data.clip_end = 6000 # make it really far!
@@ -1367,7 +1368,7 @@ class CreateBGcameras(bpy.types.Operator):
 				camera_object[c].rotation_euler[0] = camera_rotation[c][0] # x
 				camera_object[c].rotation_euler[1] = camera_rotation[c][1] # y
 				camera_object[c].rotation_euler[2] = camera_rotation[c][2] # z
-				camera_object[c].data.draw_size = 1 # probably not necessary
+				camera_object[c].data.display_size = 1 # probably not necessary
 			
 			return {"FINISHED"}
 
@@ -1387,12 +1388,12 @@ class RenderCubeMaps(bpy.types.Operator):
 				#bpy.context.object.active_material.emit = 1 # this is how to make the rendering work!!!
 				
 				bpy.context.scene.camera = this_camera
-				bpy.context.scene.render.filepath = "//HWRM_2_" + ob.name
+				bpy.context.scene.render.filepath = "//HWRM_2_" + ob.name #Get a better file path for this
 				bpy.context.scene.render.resolution_x = 1024
 				bpy.context.scene.render.resolution_y = 1024
 				bpy.context.scene.render.tile_x = 8
 				bpy.context.scene.render.tile_y = 8
-				bpy.context.scene.file_format = "TARGA_RAW"
+				bpy.context.scene.render.image_settings.file_format = "TARGA_RAW"
 				bpy.ops.render.render(write_still=True)
 				
 		return {"FINISHED"}
@@ -1477,6 +1478,7 @@ class FixObjectNames(bpy.types.Operator):
 
 
 #Register all the classes because 2.8x requires this now
+#Operator Classes
 bpy.utils.register_class(FixObjectNames)
 bpy.utils.register_class(RenderCubeMaps)
 bpy.utils.register_class(CreateBGcameras)
@@ -1490,10 +1492,16 @@ bpy.utils.register_class(MakeWeaponHardpoint)
 bpy.utils.register_class(MakeShipCOL)
 bpy.utils.register_class(MakeShipLOD)
 bpy.utils.register_class(MakeDockPath)
-bpy.utils.register_class(MakeLargeEngine)		
-bpy.utils.register_class(HMRM_PanelBackground)
-bpy.utils.register_class(HMRM_PanelDockPaths)
-bpy.utils.register_class(HMRM_PanelNavLights)
-bpy.utils.register_class(HMRMPanelEngines)
-bpy.utils.register_class(HMRMPanelTools)		
+bpy.utils.register_class(MakeLargeEngine)
+
+#Panel Classes	
 bpy.utils.register_class(HMRMPanelShip)
+bpy.utils.register_class(HMRMPanelTools)
+bpy.utils.register_class(HMRMPanelEngines)
+bpy.utils.register_class(HMRM_PanelNavLights)	
+bpy.utils.register_class(HMRM_PanelDockPaths)		
+bpy.utils.register_class(HMRM_PanelBackground)
+
+
+
+
